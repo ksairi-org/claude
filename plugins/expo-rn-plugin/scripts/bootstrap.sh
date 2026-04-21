@@ -97,13 +97,22 @@ for hook in "$MCPS_DIR/hooks"/*.sh; do
   echo "✓ .claude/hooks/$fname"
 done
 
-# 6. RTK
+# 6. gh CLI
+if ! command -v gh &>/dev/null; then
+  echo "Installing gh CLI..."
+  brew install gh
+  echo "✓ gh CLI installed"
+else
+  echo "✓ gh CLI already installed ($(gh --version | head -1))"
+fi
+
+# 7. RTK
 if [ "$SKIP_RTK" = false ]; then
   echo ""
   "$MCPS_DIR/scripts/setup-rtk.sh"
 fi
 
-# 7. Claude Code plugins
+# 8. Claude Code plugins
 if [ "$SKIP_PLUGINS" = false ]; then
   echo ""
   "$MCPS_DIR/scripts/setup-claude.sh"
