@@ -1,0 +1,57 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tsc:*)",
+      "Bash(yarn tsc:*)",
+      "Bash(yarn build:*)",
+      "Bash(yarn lint:*)",
+      "Bash(yarn eslint:*)",
+      "Bash(yarn test:*)",
+      "Bash(yarn add:*)",
+      "Bash(yarn remove:*)",
+      "Bash(yarn install:*)",
+      "Bash(yarn sync-env-vars:*)",
+      "Bash(yarn orval:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
+      "Bash(git branch:*)",
+      "Bash(doppler run:*)",
+      "Bash(doppler secrets:*)",
+      "Bash(eas build:*)",
+      "Bash(eas update:*)",
+      "Bash(eas submit:*)",
+      "Bash(maestro test:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(rm:*)",
+      "WebFetch(domain:registry.npmjs.org)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:cdn.jsdelivr.net)",
+      "WebFetch(domain:esm.sh)"
+    ],
+    "deny": []
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/context-warning.sh 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}

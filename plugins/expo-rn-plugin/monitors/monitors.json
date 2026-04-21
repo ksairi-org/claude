@@ -1,0 +1,14 @@
+[
+  {
+    "name": "pending-migrations",
+    "command": "${CLAUDE_PLUGIN_ROOT}/scripts/watch-pending-migrations.sh",
+    "description": "Detects Supabase migration files that haven't been applied to the local database",
+    "when": "always"
+  },
+  {
+    "name": "eas-active-builds",
+    "command": "${CLAUDE_PLUGIN_ROOT}/scripts/poll-eas-build.sh",
+    "description": "EAS active build status — reports in-progress builds and failures",
+    "when": "on-skill-invoke:scaffold"
+  }
+]

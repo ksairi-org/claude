@@ -1,0 +1,28 @@
+{
+  "supabase": {
+    "schema": "api"
+  },
+  "components": {
+    "atoms": "src/components/atoms",
+    "molecules": "src/components/molecules",
+    "organisms": "src/components/organisms",
+    "screens": "src/screens"
+  },
+  "libs": [],
+  "router": "expo-router",
+  "routesDir": "src/app",
+  "orval": {
+    "sdkLib": "libs/react-query-sdk"
+  },
+  "i18n": {
+    "localesDir": "src/i18n/locales",
+    "sourceLocale": "en",
+    "targetLocales": ["es"],
+    "sourceGlobs": ["src/**/*.{ts,tsx}"],
+    "catalogFormat": "po"
+  },
+  "firebase": {
+    "serviceAccountPath": "./firebase-service-account.json",
+    "deviceTokensTable": "device_tokens"
+  }
+}

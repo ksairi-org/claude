@@ -1,0 +1,30 @@
+{
+  "name": "expo-rn-plugin",
+  "version": "1.0.0",
+  "description": "Claude Code plugin for React Native / Expo + Supabase projects. Provides MCP servers, scaffolding, Figma sync, i18n review, and RTK token optimization.",
+  "author": {
+    "name": "Mariano Ksairi",
+    "email": "marianoksairi@gmail.com"
+  },
+  "license": "MIT",
+  "keywords": [
+    "expo",
+    "react-native",
+    "supabase",
+    "typescript",
+    "tamagui",
+    "lingui",
+    "eas"
+  ],
+  "userConfig": {
+    "doppler_project": {
+      "description": "Doppler project name for secret management (e.g. my-app)",
+      "sensitive": false
+    },
+    "doppler_config": {
+      "description": "Doppler config to use (dev / stg / prod)",
+      "sensitive": false
+    }
+  },
+  "dependencies": []
+}

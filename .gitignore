@@ -1,0 +1,18 @@
+# Secrets
+.env
+*.env
+.mcp-env
+.mcp-project
+
+# Dependencies
+node_modules/
+dist/
+
+# Yarn
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# OS
+.DS_Store
