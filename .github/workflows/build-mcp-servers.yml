@@ -4,9 +4,11 @@ on:
   push:
     paths:
       - plugins/expo-rn-plugin/mcps/**
+      - .github/workflows/build-mcp-servers.yml
   pull_request:
     paths:
       - plugins/expo-rn-plugin/mcps/**
+      - .github/workflows/build-mcp-servers.yml
 
 jobs:
   build:
@@ -27,7 +29,7 @@ jobs:
 
       - name: Install & build ${{ matrix.server }}
         working-directory: plugins/expo-rn-plugin/mcps/${{ matrix.server }}
-        run: yarn install --immutable && yarn --silent build
+        run: yarn install --immutable && yarn build
 
       - name: Check dist/ is up to date
         working-directory: plugins/expo-rn-plugin/mcps/${{ matrix.server }}
