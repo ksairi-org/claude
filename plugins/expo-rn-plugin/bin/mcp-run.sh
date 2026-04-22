@@ -4,6 +4,15 @@
 # with fallback to mcp.config.json in the project root.
 set -euo pipefail
 
+# Ensure homebrew and nvm are in PATH (MCP processes inherit a limited env)
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:${PATH:-/usr/bin:/bin}"
+if [ -n "${NVM_BIN:-}" ]; then
+  export PATH="$NVM_BIN:$PATH"
+elif [ -d "$HOME/.nvm/versions/node" ]; then
+  _nvm_node=$(ls -v "$HOME/.nvm/versions/node" 2>/dev/null | tail -1)
+  [ -n "$_nvm_node" ] && export PATH="$HOME/.nvm/versions/node/$_nvm_node/bin:$PATH"
+fi
+
 PROJECT="${CLAUDE_PLUGIN_OPTION_DOPPLER_PROJECT:-}"
 CONFIG="${CLAUDE_PLUGIN_OPTION_DOPPLER_CONFIG:-}"
 
