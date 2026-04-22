@@ -1,0 +1,13 @@
+{
+  "name": "claude",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "husky": "^9.1.7"
+  }
+}
