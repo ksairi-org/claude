@@ -7,7 +7,7 @@ exports.formatSendResult = formatSendResult;
 const promises_1 = require("fs/promises");
 const path_1 = require("path");
 const crypto_1 = require("crypto");
-const supabase_js_1 = require("../supabase.js");
+const db_client_js_1 = require("../db-client.js");
 const load_config_js_1 = require("./load-config.js");
 // ─── JWT / OAuth2 helpers ──────────────────────────────────────────────────────
 const FCM_SCOPE = "https://www.googleapis.com/auth/firebase.messaging";
@@ -58,8 +58,8 @@ function maskToken(token) {
 }
 const DEFAULT_TOKENS_TABLE = "device_tokens";
 const DEFAULT_TOKEN_LIMIT = 10;
-async function inspectSupabaseTokens(tableName, limit) {
-    const existsRows = await (0, supabase_js_1.runSql)(`
+async function inspectDatabaseTokens(tableName, limit) {
+    const existsRows = await (0, db_client_js_1.runSql)(`
     SELECT 1
     FROM information_schema.tables
     WHERE table_schema = 'api'
@@ -76,7 +76,7 @@ async function inspectSupabaseTokens(tableName, limit) {
             suggestedMigration: generateMigration(tableName),
         };
     }
-    const countRows = await (0, supabase_js_1.runSql)(`
+    const countRows = await (0, db_client_js_1.runSql)(`
     SELECT platform, COUNT(*) as count
     FROM api.${tableName}
     GROUP BY platform
@@ -89,7 +89,7 @@ async function inspectSupabaseTokens(tableName, limit) {
         byPlatform[platform] = count;
         total += count;
     }
-    const recentRows = await (0, supabase_js_1.runSql)(`
+    const recentRows = await (0, db_client_js_1.runSql)(`
     SELECT id, user_id, platform, token, created_at
     FROM api.${tableName}
     ORDER BY created_at DESC
@@ -130,7 +130,7 @@ async function inspectPushTokens(options) {
     if (backend !== "supabase") {
         return unsupportedInspectResult(tableName, backend);
     }
-    return inspectSupabaseTokens(tableName, limit);
+    return inspectDatabaseTokens(tableName, limit);
 }
 function generateMigration(tableName) {
     return [

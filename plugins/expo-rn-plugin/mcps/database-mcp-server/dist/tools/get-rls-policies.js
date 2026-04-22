@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRlsPolicies = getRlsPolicies;
-const supabase_1 = require("../supabase");
+const db_client_1 = require("../db-client");
 function pgIdent(name) {
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) {
         throw new Error(`Invalid SQL identifier: "${name}"`);
@@ -10,7 +10,7 @@ function pgIdent(name) {
 }
 async function getRlsPolicies(tableName) {
     const tableFilter = tableName ? `AND tablename = '${pgIdent(tableName)}'` : "";
-    const rows = await (0, supabase_1.runSql)(`
+    const rows = await (0, db_client_1.runSql)(`
     SELECT tablename, policyname, cmd, permissive, roles, qual, with_check
     FROM pg_policies
     WHERE schemaname = 'api'

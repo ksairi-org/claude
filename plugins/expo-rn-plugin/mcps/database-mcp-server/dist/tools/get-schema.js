@@ -2,22 +2,22 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getSchema = getSchema;
 exports.formatSchema = formatSchema;
-const supabase_js_1 = require("../supabase.js");
+const db_client_js_1 = require("../db-client.js");
 async function getSchema() {
     const [tablesRows, viewsRows, funcsRows, enumsRows] = await Promise.all([
-        (0, supabase_js_1.runSql)(`
+        (0, db_client_js_1.runSql)(`
       SELECT c.table_name, c.column_name, c.data_type, c.is_nullable, c.column_default
       FROM information_schema.columns c
       WHERE c.table_schema = 'api'
       ORDER BY c.table_name, c.ordinal_position
     `),
-        (0, supabase_js_1.runSql)(`
+        (0, db_client_js_1.runSql)(`
       SELECT table_name AS view_name, view_definition AS definition
       FROM information_schema.views
       WHERE table_schema = 'api'
       ORDER BY table_name
     `),
-        (0, supabase_js_1.runSql)(`
+        (0, db_client_js_1.runSql)(`
       SELECT DISTINCT r.routine_name AS function_name,
         r.data_type AS return_type,
         pg_get_function_arguments(p.oid) AS argument_types
@@ -27,7 +27,7 @@ async function getSchema() {
       WHERE r.routine_schema = 'api' AND n.nspname = 'api'
       ORDER BY r.routine_name
     `),
-        (0, supabase_js_1.runSql)(`
+        (0, db_client_js_1.runSql)(`
       SELECT t.typname AS enum_name,
         array_agg(e.enumlabel ORDER BY e.enumsortorder) AS values
       FROM pg_type t
@@ -68,7 +68,7 @@ async function getSchema() {
     };
 }
 function formatSchema(schema) {
-    const lines = ["# Supabase Schema (api schema)"];
+    const lines = ["# Database Schema (api schema)"];
     lines.push(`\n## Tables (${schema.tables.length})`);
     for (const t of schema.tables) {
         lines.push(`\n### ${t.table_name}`);

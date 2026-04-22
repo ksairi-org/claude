@@ -6,7 +6,7 @@ const promises_1 = require("fs/promises");
 const path_1 = require("path");
 const DEFAULTS = {
     backend: "supabase",
-    supabase: {
+    database: {
         schema: "public",
     },
     components: {
@@ -28,7 +28,7 @@ async function loadConfig(projectRoot) {
         return {
             backend: parsed.backend ?? DEFAULTS.backend,
             schemaPath: parsed.schemaPath,
-            supabase: { ...DEFAULTS.supabase, ...parsed.supabase },
+            database: { ...DEFAULTS.database, ...parsed.database },
             components: { ...DEFAULTS.components, ...parsed.components },
             libs: parsed.libs ?? DEFAULTS.libs,
             router: parsed.router ?? DEFAULTS.router,
@@ -47,7 +47,7 @@ function configSummary(config) {
     const lines = [
         "# MCP Config",
         `Backend: ${config.backend}`,
-        ...(config.backend === "supabase" ? [`Supabase schema: ${config.supabase.schema}`] : []),
+        ...(config.backend === "supabase" ? [`Database schema: ${config.database.schema}`] : []),
         ...(config.schemaPath ? [`Schema path: ${config.schemaPath}`] : []),
         `Router: ${config.router}`,
         `Routes dir: ${config.routesDir}`,

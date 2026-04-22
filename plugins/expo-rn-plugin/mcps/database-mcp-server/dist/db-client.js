@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.supabase = void 0;
+exports.dbClient = void 0;
 exports.runSql = runSql;
 const supabase_js_1 = require("@supabase/supabase-js");
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -24,4 +24,4 @@ async function runSql(query) {
 if (!supabaseUrl || !supabaseKey) {
     throw new Error("Missing required env vars: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY");
 }
-exports.supabase = (0, supabase_js_1.createClient)(supabaseUrl, supabaseKey);
+exports.dbClient = (0, supabase_js_1.createClient)(supabaseUrl, supabaseKey);

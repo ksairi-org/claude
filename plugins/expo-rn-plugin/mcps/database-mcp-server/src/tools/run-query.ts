@@ -1,4 +1,4 @@
-import { runSql } from "../supabase";
+import { runSql } from "../db-client";
 
 export async function runQuery(
   query: string,

@@ -102,7 +102,7 @@ function formatApiSurface(files) {
         "# Orval API Surface",
         "",
         `${files.length} files · ${totalExports} exports`,
-        "Use these hooks and types — do not write Supabase queries manually.",
+        "Use these hooks and types — do not write database queries manually.",
         "",
     ];
     for (const f of files) {

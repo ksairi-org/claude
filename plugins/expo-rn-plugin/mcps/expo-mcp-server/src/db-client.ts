@@ -6,10 +6,16 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 export async function runSql(
   query: string,
 ): Promise<Record<string, unknown>[]> {
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error(
+      "Missing required env vars: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY",
+    );
+  }
+
   const response = await fetch(`${supabaseUrl}/rest/v1/rpc/run_sql`, {
     method: "POST",
     headers: {
-      apikey: supabaseKey!,
+      apikey: supabaseKey,
       Authorization: `Bearer ${supabaseKey}`,
       "Content-Type": "application/json",
     },
@@ -24,10 +30,11 @@ export async function runSql(
   return response.json();
 }
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error(
-    "Missing required env vars: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY",
-  );
+export function getDatabaseClient() {
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error(
+      "Missing required env vars: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY",
+    );
+  }
+  return createClient(supabaseUrl, supabaseKey);
 }
-
-export const supabase = createClient(supabaseUrl, supabaseKey);

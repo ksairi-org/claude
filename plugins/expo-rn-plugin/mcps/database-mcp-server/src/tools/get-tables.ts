@@ -1,4 +1,4 @@
-import { runSql } from "../supabase";
+import { runSql } from "../db-client";
 
 interface ColumnInfo {
   column_name: string;

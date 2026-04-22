@@ -1,6 +1,6 @@
 ---
 name: scaffold
-description: Scaffold a full CRUD feature (types, hooks, screens, routes, form) from a Supabase table. Use when creating a new feature end-to-end from a database table.
+description: Scaffold a full CRUD feature (types, hooks, screens, routes, form) from a database table. Use when creating a new feature end-to-end from a database table.
 argument-hint: "<table_name>"
 ---
 

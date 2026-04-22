@@ -76,7 +76,7 @@ async function detectOrval(projectRoot) {
     return undefined;
 }
 async function initProjectConfig(options) {
-    const { projectRoot, backend = "supabase", supabaseSchema = "api", schemaPath, sourceLocale = "en", targetLocales = ["es"], overwrite = false, } = options;
+    const { projectRoot, backend = "supabase", databaseSchema = "api", schemaPath, sourceLocale = "en", targetLocales = ["es"], overwrite = false, } = options;
     const configPath = (0, path_1.join)(projectRoot, "mcp.config.json");
     const warnings = [];
     if (!overwrite && (await exists(configPath))) {
@@ -99,7 +99,7 @@ async function initProjectConfig(options) {
     }
     const config = { backend, components, libs, router, routesDir };
     if (backend === "supabase") {
-        config.supabase = { schema: supabaseSchema };
+        config.database = { schema: databaseSchema };
     }
     if (schemaPath) {
         config.schemaPath = schemaPath;

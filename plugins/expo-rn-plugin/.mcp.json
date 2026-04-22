@@ -8,12 +8,12 @@
         "NODE_PATH": "${CLAUDE_PLUGIN_ROOT}/mcps/expo-mcp-server/node_modules"
       }
     },
-    "supabase": {
+    "database": {
       "type": "stdio",
       "command": "${CLAUDE_PLUGIN_ROOT}/bin/mcp-run.sh",
-      "args": ["node", "${CLAUDE_PLUGIN_ROOT}/mcps/supabase-mcp-server/dist/index.js"],
+      "args": ["node", "${CLAUDE_PLUGIN_ROOT}/mcps/database-mcp-server/dist/index.js"],
       "env": {
-        "NODE_PATH": "${CLAUDE_PLUGIN_ROOT}/mcps/supabase-mcp-server/node_modules"
+        "NODE_PATH": "${CLAUDE_PLUGIN_ROOT}/mcps/database-mcp-server/node_modules"
       }
     },
     "figma": {

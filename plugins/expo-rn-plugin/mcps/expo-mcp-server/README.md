@@ -19,10 +19,10 @@ MCP server for React Native / Expo development. Provides project inspection, cod
 
 | Tool | Description |
 | --- | --- |
-| `scaffold_form` | Generates a Zod schema, react-hook-form hook, and RN form component from a Supabase table. |
-| `scaffold_crud` | Generates TypeScript types, react-query hooks, List/Detail/Create screens, and Expo Router routes from a Supabase table. |
+| `scaffold_form` | Generates a Zod schema, react-hook-form hook, and RN form component from a database table. |
+| `scaffold_crud` | Generates TypeScript types, react-query hooks, List/Detail/Create screens, and Expo Router routes from a database table. |
 
-> `scaffold_form` and `scaffold_crud` require Supabase env vars (they read the live schema).
+> `scaffold_form` and `scaffold_crud` require database env vars (they read the live schema).
 
 ### i18n
 
@@ -34,7 +34,7 @@ MCP server for React Native / Expo development. Provides project inspection, cod
 
 | Tool | Description |
 | --- | --- |
-| `inspect_push_tokens` | Shows FCM token counts by platform from the Supabase DB. Returns migration SQL if the table doesn't exist yet. |
+| `inspect_push_tokens` | Shows FCM token counts by platform from the database. Returns migration SQL if the table doesn't exist yet. |
 | `send_test_push` | Sends a test FCM notification to a specific device token via the Firebase v1 HTTP API. |
 
 ### Testing and builds
@@ -52,7 +52,7 @@ Each project that uses this server needs an `mcp.config.json` at its root. Run `
 
 ### Environment variables
 
-Required for all tools that touch Supabase (`scaffold_form`, `scaffold_crud`, `inspect_push_tokens`, `send_test_push`):
+Required for Supabase backend tools (`scaffold_form`, `scaffold_crud`, `inspect_push_tokens`, `send_test_push`):
 
 ```
 SUPABASE_URL=https://<project>.supabase.co

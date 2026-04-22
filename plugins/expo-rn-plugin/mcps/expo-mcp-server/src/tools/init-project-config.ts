@@ -5,7 +5,7 @@ import { glob } from "glob";
 interface InitOptions {
   projectRoot: string;
   backend?: "supabase" | "firebase" | "rest";
-  supabaseSchema?: string;
+  databaseSchema?: string;
   schemaPath?: string;
   sourceLocale?: string;
   targetLocales?: string[];
@@ -101,7 +101,7 @@ export async function initProjectConfig(options: InitOptions): Promise<InitResul
   const {
     projectRoot,
     backend = "supabase",
-    supabaseSchema = "api",
+    databaseSchema = "api",
     schemaPath,
     sourceLocale = "en",
     targetLocales = ["es"],
@@ -134,7 +134,7 @@ export async function initProjectConfig(options: InitOptions): Promise<InitResul
   const config: Record<string, unknown> = { backend, components, libs, router, routesDir };
 
   if (backend === "supabase") {
-    config.supabase = { schema: supabaseSchema };
+    config.database = { schema: databaseSchema };
   }
   if (schemaPath) {
     config.schemaPath = schemaPath;

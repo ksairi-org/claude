@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getTableSchema = getTableSchema;
 const promises_1 = require("fs/promises");
 const path_1 = require("path");
-const supabase_js_1 = require("./supabase.js");
+const db_client_js_1 = require("./db-client.js");
 function parseSchemaJson(raw, tableName) {
     const tableSchema = raw[tableName];
     if (!tableSchema) {
@@ -38,17 +38,17 @@ function parseSchemaJson(raw, tableName) {
     }
     return { columns, enums };
 }
-// ─── Supabase schema introspection ────────────────────────────────────────────
+// ─── Database schema introspection ───────────────────────────────────────────
 function pgIdent(name) {
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) {
         throw new Error(`Invalid SQL identifier: "${name}"`);
     }
     return name;
 }
-async function getSupabaseSchema(tableName, schema) {
+async function getDatabaseSchema(tableName, schema) {
     const safeTable = pgIdent(tableName);
     const safeSchema = pgIdent(schema);
-    const rawColumns = await (0, supabase_js_1.runSql)(`
+    const rawColumns = await (0, db_client_js_1.runSql)(`
     SELECT
       c.column_name,
       c.data_type,
@@ -78,7 +78,7 @@ async function getSupabaseSchema(tableName, schema) {
     const enums = new Map();
     if (udtNames.length > 0) {
         const quotedNames = udtNames.map((n) => `'${pgIdent(n)}'`).join(", ");
-        const enumRows = await (0, supabase_js_1.runSql)(`
+        const enumRows = await (0, db_client_js_1.runSql)(`
       SELECT
         t.typname AS enum_name,
         array_agg(e.enumlabel ORDER BY e.enumsortorder) AS enum_values
@@ -96,9 +96,9 @@ async function getSupabaseSchema(tableName, schema) {
     return { columns, enums };
 }
 // ─── Public API ───────────────────────────────────────────────────────────────
-async function getTableSchema(tableName, backend, supabaseSchema, schemaPath, projectRoot) {
+async function getTableSchema(tableName, backend, databaseSchema, schemaPath, projectRoot) {
     if (backend === "supabase") {
-        return getSupabaseSchema(tableName, supabaseSchema);
+        return getDatabaseSchema(tableName, databaseSchema);
     }
     if (!schemaPath) {
         throw new Error(`backend is "${backend}" but no schemaPath is configured in mcp.config.json.\n` +

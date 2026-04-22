@@ -1,11 +1,11 @@
 {
   "mcpServers": {
-    "supabase": {
+    "database": {
       "type": "stdio",
       "command": "./scripts/mcp-run.sh",
       "args": [
         "__NODE_PATH__",
-        "__MCPS_DIR__/supabase-mcp-server/dist/index.js"
+        "__MCPS_DIR__/database-mcp-server/dist/index.js"
       ]
     },
     "expo": {

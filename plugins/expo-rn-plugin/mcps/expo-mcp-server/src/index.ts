@@ -53,10 +53,10 @@ server.registerTool(
         .enum(["supabase", "firebase", "rest"])
         .optional()
         .describe('Backend to use for data. Defaults to "supabase".'),
-      supabaseSchema: z
+      databaseSchema: z
         .string()
         .optional()
-        .describe('Supabase schema name. Only used when backend is "supabase". Defaults to "api".'),
+        .describe('Database schema name. Only used when backend is "supabase". Defaults to "api".'),
       schemaPath: z
         .string()
         .optional()
@@ -77,8 +77,8 @@ server.registerTool(
         .describe("Overwrite existing mcp.config.json. Default: false."),
     },
   },
-  async ({ projectRoot, backend, supabaseSchema, schemaPath, sourceLocale, targetLocales, overwrite }) => {
-    const result = await initProjectConfig({ projectRoot, backend, supabaseSchema, schemaPath, sourceLocale, targetLocales, overwrite });
+  async ({ projectRoot, backend, databaseSchema, schemaPath, sourceLocale, targetLocales, overwrite }) => {
+    const result = await initProjectConfig({ projectRoot, backend, databaseSchema, schemaPath, sourceLocale, targetLocales, overwrite });
     return { content: [{ type: "text", text: formatInitResult(result) }] };
   },
 );
@@ -154,7 +154,7 @@ server.registerTool(
   "get_orval_api_surface",
   {
     description:
-      "Returns all hooks and types exported by the orval-generated API SDK. Use this before writing any data-fetching code to reuse existing hooks instead of writing manual Supabase queries. Run `yarn orval` first if the SDK is out of date.",
+      "Returns all hooks and types exported by the orval-generated API SDK. Use this before writing any data-fetching code to reuse existing hooks instead of writing manual database queries. Run `yarn orval` first if the SDK is out of date.",
     inputSchema: {
       projectRoot: z
         .string()

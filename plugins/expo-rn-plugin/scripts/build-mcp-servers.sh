@@ -27,4 +27,4 @@ build_server() {
 }
 
 build_server "expo-mcp-server"
-build_server "supabase-mcp-server"
+build_server "database-mcp-server"

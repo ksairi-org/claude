@@ -38,7 +38,7 @@
 <!-- Describe the stack, key services, and architectural decisions here -->
 
 - React Native / Expo app
-- Supabase with `api` schema (not public)
+- Database with `api` schema (not public)
 - Expo Router for navigation
 - Component patterns in `src/components/`
 
@@ -71,7 +71,7 @@
 | **Server state** | react-query / orval hooks | user profile, transactions, balances |
 | **Client/UI state** | Zustand | auth session, onboarding flags, ephemeral UI state |
 
-If data comes from or syncs to Supabase, it belongs in react-query. Zustand stores should be thin.
+If data comes from or syncs to the backend, it belongs in react-query. Zustand stores should be thin.
 
 ### Store structure
 
@@ -113,7 +113,7 @@ const store = useUserStore();
 
 ### What does NOT belong in Zustand
 
-- Data fetched from Supabase — use react-query hooks
+- Data fetched from the backend — use react-query hooks
 - Derived/computed values — derive in the component
 - Loading/error states for network requests — react-query owns those
 

@@ -415,7 +415,7 @@ export async function scaffoldForm(
   const { columns: rawColumns, enums } = await getTableSchema(
     tableName,
     backend,
-    config.supabase.schema ?? "public",
+    config.database.schema ?? "public",
     config.schemaPath,
     projectRoot,
   );

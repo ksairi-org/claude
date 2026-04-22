@@ -337,7 +337,7 @@ async function scaffoldForm(options) {
     const pascalName = toPascalCase(tableName);
     const config = await (0, load_config_js_1.loadConfig)(projectRoot);
     const backend = options.backend ?? config.backend;
-    const { columns: rawColumns, enums } = await (0, schema_source_js_1.getTableSchema)(tableName, backend, config.supabase.schema ?? "public", config.schemaPath, projectRoot);
+    const { columns: rawColumns, enums } = await (0, schema_source_js_1.getTableSchema)(tableName, backend, config.database.schema ?? "public", config.schemaPath, projectRoot);
     const columns = omitAutoFields
         ? rawColumns.filter((c) => !AUTO_FIELDS.has(c.column_name))
         : rawColumns;

@@ -30,7 +30,7 @@ export interface McpConfig {
   backend?: BackendKind;
   /** Path to schema.json (relative to project root or absolute). Required when backend is "firebase" or "rest". */
   schemaPath?: string;
-  supabase?: {
+  database?: {
     schema?: string;
   };
   components?: {
@@ -59,7 +59,7 @@ export type ResolvedMcpConfig = Omit<Required<McpConfig>, "i18n" | "firebase" | 
 
 const DEFAULTS: ResolvedMcpConfig = {
   backend: "supabase",
-  supabase: {
+  database: {
     schema: "public",
   },
   components: {
@@ -86,7 +86,7 @@ export async function loadConfig(
     return {
       backend: parsed.backend ?? DEFAULTS.backend,
       schemaPath: parsed.schemaPath,
-      supabase: { ...DEFAULTS.supabase, ...parsed.supabase },
+      database: { ...DEFAULTS.database, ...parsed.database },
       components: { ...DEFAULTS.components, ...parsed.components },
       libs: parsed.libs ?? DEFAULTS.libs,
       router: parsed.router ?? DEFAULTS.router,
@@ -105,7 +105,7 @@ export function configSummary(config: ResolvedMcpConfig): string {
   const lines = [
     "# MCP Config",
     `Backend: ${config.backend}`,
-    ...(config.backend === "supabase" ? [`Supabase schema: ${config.supabase.schema}`] : []),
+    ...(config.backend === "supabase" ? [`Database schema: ${config.database.schema}`] : []),
     ...(config.schemaPath ? [`Schema path: ${config.schemaPath}`] : []),
     `Router: ${config.router}`,
     `Routes dir: ${config.routesDir}`,

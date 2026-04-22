@@ -38,10 +38,10 @@ server.registerTool("init_project_config", {
             .enum(["supabase", "firebase", "rest"])
             .optional()
             .describe('Backend to use for data. Defaults to "supabase".'),
-        supabaseSchema: zod_1.z
+        databaseSchema: zod_1.z
             .string()
             .optional()
-            .describe('Supabase schema name. Only used when backend is "supabase". Defaults to "api".'),
+            .describe('Database schema name. Only used when backend is "supabase". Defaults to "api".'),
         schemaPath: zod_1.z
             .string()
             .optional()
@@ -59,8 +59,8 @@ server.registerTool("init_project_config", {
             .optional()
             .describe("Overwrite existing mcp.config.json. Default: false."),
     },
-}, async ({ projectRoot, backend, supabaseSchema, schemaPath, sourceLocale, targetLocales, overwrite }) => {
-    const result = await (0, init_project_config_js_1.initProjectConfig)({ projectRoot, backend, supabaseSchema, schemaPath, sourceLocale, targetLocales, overwrite });
+}, async ({ projectRoot, backend, databaseSchema, schemaPath, sourceLocale, targetLocales, overwrite }) => {
+    const result = await (0, init_project_config_js_1.initProjectConfig)({ projectRoot, backend, databaseSchema, schemaPath, sourceLocale, targetLocales, overwrite });
     return { content: [{ type: "text", text: (0, init_project_config_js_1.formatInitResult)(result) }] };
 });
 server.registerTool("get_components", {
@@ -107,7 +107,7 @@ server.registerTool("get_design_tokens", {
     };
 });
 server.registerTool("get_orval_api_surface", {
-    description: "Returns all hooks and types exported by the orval-generated API SDK. Use this before writing any data-fetching code to reuse existing hooks instead of writing manual Supabase queries. Run `yarn orval` first if the SDK is out of date.",
+    description: "Returns all hooks and types exported by the orval-generated API SDK. Use this before writing any data-fetching code to reuse existing hooks instead of writing manual database queries. Run `yarn orval` first if the SDK is out of date.",
     inputSchema: {
         projectRoot: zod_1.z
             .string()

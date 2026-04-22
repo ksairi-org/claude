@@ -1,4 +1,4 @@
-import { runSql } from "../supabase.js";
+import { runSql } from "../db-client.js";
 
 interface ColumnInfo {
   column_name: string;
@@ -102,7 +102,7 @@ export async function getSchema(): Promise<FullSchema> {
 }
 
 export function formatSchema(schema: FullSchema): string {
-  const lines = ["# Supabase Schema (api schema)"];
+  const lines = ["# Database Schema (api schema)"];
 
   lines.push(`\n## Tables (${schema.tables.length})`);
   for (const t of schema.tables) {

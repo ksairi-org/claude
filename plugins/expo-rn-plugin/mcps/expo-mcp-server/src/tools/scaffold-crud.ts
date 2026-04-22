@@ -184,7 +184,7 @@ function generateTypesCode(
   ].join("\n");
 }
 
-function generateSupabaseHooksCode(tableName: string, pascalName: string): string {
+function generateDatabaseHooksCode(tableName: string, pascalName: string): string {
   const queryKeyConst = `${toCamelCase(tableName).toUpperCase()}_QUERY_KEY`;
   return [
     `import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";`,
@@ -426,7 +426,7 @@ function generateHooksCode(
 ): string {
   if (backend === "firebase") return generateFirebaseHooksCode(tableName, pascalName);
   if (backend === "rest") return generateRestHooksCode(tableName, pascalName);
-  return generateSupabaseHooksCode(tableName, pascalName);
+  return generateDatabaseHooksCode(tableName, pascalName);
 }
 
 function generateListScreenCode(
@@ -737,7 +737,7 @@ export async function scaffoldCrud(
   const { columns: allColumns, enums } = await getTableSchema(
     tableName,
     backend,
-    config.supabase.schema ?? "public",
+    config.database.schema ?? "public",
     config.schemaPath,
     projectRoot,
   );

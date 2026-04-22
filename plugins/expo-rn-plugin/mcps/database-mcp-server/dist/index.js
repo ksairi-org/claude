@@ -10,11 +10,11 @@ const run_query_js_1 = require("./tools/run-query.js");
 const get_schema_js_1 = require("./tools/get-schema.js");
 const generate_migration_js_1 = require("./tools/generate-migration.js");
 const server = new mcp_js_1.McpServer({
-    name: "supabase-mcp-server",
+    name: "database-mcp-server",
     version: "1.0.0",
 });
 server.registerTool("get_tables", {
-    description: "Returns all tables and their columns from your Supabase api schema",
+    description: "Returns all tables and their columns from your database api schema",
 }, async () => {
     const tables = await (0, get_tables_js_1.getTables)();
     const lines = [`# Tables (${tables.length})\n`];
@@ -32,7 +32,7 @@ server.registerTool("get_tables", {
     };
 });
 server.registerTool("get_rls_policies", {
-    description: "Returns all Row Level Security (RLS) policies defined on your Supabase tables",
+    description: "Returns all Row Level Security (RLS) policies defined on your database tables",
     inputSchema: {
         tableName: zod_1.z
             .string()
@@ -68,7 +68,7 @@ server.registerTool("get_rls_policies", {
     };
 });
 server.registerTool("get_schema", {
-    description: "Returns the full Supabase api schema including tables, views, functions, and enums. Use this for a complete picture of the database — more thorough than get_tables alone.",
+    description: "Returns the full database api schema including tables, views, functions, and enums. Use this for a complete picture of the database — more thorough than get_tables alone.",
 }, async () => {
     const schema = await (0, get_schema_js_1.getSchema)();
     return {
@@ -76,7 +76,7 @@ server.registerTool("get_schema", {
     };
 });
 server.registerTool("generate_query", {
-    description: "Takes a natural language description and returns a typed Supabase query based on your real schema",
+    description: "Takes a natural language description and returns a typed query based on your real schema",
     inputSchema: {
         description: zod_1.z
             .string()
@@ -107,7 +107,7 @@ server.registerTool("generate_query", {
     };
 });
 server.registerTool("run_query", {
-    description: "Executes a raw SQL query against your Supabase database and returns the results",
+    description: "Executes a raw SQL query against your database and returns the results",
     inputSchema: {
         query: zod_1.z
             .string()
@@ -143,7 +143,7 @@ server.registerTool("generate_migration", {
 async function main() {
     const transport = new stdio_js_1.StdioServerTransport();
     await server.connect(transport);
-    console.error("Supabase MCP Server running on stdio");
+    console.error("Database MCP Server running on stdio");
 }
 main().catch((err) => {
     console.error("Fatal error:", err);

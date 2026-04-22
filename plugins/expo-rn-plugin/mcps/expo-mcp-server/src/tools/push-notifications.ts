@@ -1,7 +1,7 @@
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { createSign } from "crypto";
-import { runSql } from "../supabase.js";
+import { runSql } from "../db-client.js";
 import { loadConfig } from "./load-config.js";
 import type { BackendKind } from "./load-config.js";
 
@@ -111,7 +111,7 @@ export interface InspectPushTokensResult {
 const DEFAULT_TOKENS_TABLE = "device_tokens";
 const DEFAULT_TOKEN_LIMIT = 10;
 
-async function inspectSupabaseTokens(
+async function inspectDatabaseTokens(
   tableName: string,
   limit: number,
 ): Promise<InspectPushTokensResult> {
@@ -204,7 +204,7 @@ export async function inspectPushTokens(
     return unsupportedInspectResult(tableName, backend);
   }
 
-  return inspectSupabaseTokens(tableName, limit);
+  return inspectDatabaseTokens(tableName, limit);
 }
 
 function generateMigration(tableName: string): string {

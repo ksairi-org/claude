@@ -6,7 +6,7 @@ Mariano Ksairi's Claude Code configuration — marketplace plugins, global hooks
 
 | Plugin | Description |
 | --- | --- |
-| [expo-rn-plugin](plugins/expo-rn-plugin/) | Claude Code plugin for React Native / Expo + Supabase projects |
+| [expo-rn-plugin](plugins/expo-rn-plugin/) | Claude Code plugin for React Native / Expo projects (Supabase, Firebase, REST) |
 
 ## Contributing
 

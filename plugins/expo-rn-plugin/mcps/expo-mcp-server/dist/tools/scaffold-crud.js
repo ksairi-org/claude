@@ -120,7 +120,7 @@ function generateTypesCode(tableName, pascalName, allColumns, writeColumns, enum
         `export type Update${pascalName}Input = Partial<Create${pascalName}Input>;`,
     ].join("\n");
 }
-function generateSupabaseHooksCode(tableName, pascalName) {
+function generateDatabaseHooksCode(tableName, pascalName) {
     const queryKeyConst = `${toCamelCase(tableName).toUpperCase()}_QUERY_KEY`;
     return [
         `import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";`,
@@ -357,7 +357,7 @@ function generateHooksCode(tableName, pascalName, backend) {
         return generateFirebaseHooksCode(tableName, pascalName);
     if (backend === "rest")
         return generateRestHooksCode(tableName, pascalName);
-    return generateSupabaseHooksCode(tableName, pascalName);
+    return generateDatabaseHooksCode(tableName, pascalName);
 }
 function generateListScreenCode(tableName, pascalName, displayField) {
     return [
@@ -636,7 +636,7 @@ async function scaffoldCrud(options) {
     const backend = options.backend ?? config.backend;
     const screensDir = config.components.screens ?? "src/screens";
     const routesDir = config.routesDir;
-    const { columns: allColumns, enums } = await (0, schema_source_js_1.getTableSchema)(tableName, backend, config.supabase.schema ?? "public", config.schemaPath, projectRoot);
+    const { columns: allColumns, enums } = await (0, schema_source_js_1.getTableSchema)(tableName, backend, config.database.schema ?? "public", config.schemaPath, projectRoot);
     const writeColumns = omitAutoFields
         ? allColumns.filter((c) => !AUTO_FIELDS.has(c.column_name))
         : allColumns;

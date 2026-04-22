@@ -9,7 +9,7 @@ import { getSchema, formatSchema } from "./tools/get-schema.js";
 import { generateMigration, formatMigrationResult } from "./tools/generate-migration.js";
 
 const server = new McpServer({
-  name: "supabase-mcp-server",
+  name: "database-mcp-server",
   version: "1.0.0",
 });
 
@@ -17,7 +17,7 @@ server.registerTool(
   "get_tables",
   {
     description:
-      "Returns all tables and their columns from your Supabase api schema",
+      "Returns all tables and their columns from your database api schema",
   },
   async () => {
     const tables = await getTables();
@@ -41,7 +41,7 @@ server.registerTool(
   "get_rls_policies",
   {
     description:
-      "Returns all Row Level Security (RLS) policies defined on your Supabase tables",
+      "Returns all Row Level Security (RLS) policies defined on your database tables",
     inputSchema: {
       tableName: z
         .string()
@@ -81,7 +81,7 @@ server.registerTool(
   "get_schema",
   {
     description:
-      "Returns the full Supabase api schema including tables, views, functions, and enums. Use this for a complete picture of the database — more thorough than get_tables alone.",
+      "Returns the full database api schema including tables, views, functions, and enums. Use this for a complete picture of the database — more thorough than get_tables alone.",
   },
   async () => {
     const schema = await getSchema();
@@ -95,7 +95,7 @@ server.registerTool(
   "generate_query",
   {
     description:
-      "Takes a natural language description and returns a typed Supabase query based on your real schema",
+      "Takes a natural language description and returns a typed query based on your real schema",
     inputSchema: {
       description: z
         .string()
@@ -134,7 +134,7 @@ server.registerTool(
   "run_query",
   {
     description:
-      "Executes a raw SQL query against your Supabase database and returns the results",
+      "Executes a raw SQL query against your database and returns the results",
     inputSchema: {
       query: z
         .string()
@@ -184,7 +184,7 @@ server.registerTool(
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("Supabase MCP Server running on stdio");
+  console.error("Database MCP Server running on stdio");
 }
 
 main().catch((err) => {

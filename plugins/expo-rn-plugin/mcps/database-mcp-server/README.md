@@ -1,6 +1,6 @@
-# supabase-mcp-server
+# database-mcp-server
 
-MCP server for Supabase database operations. Provides schema introspection, RLS policy inspection, query generation, SQL execution, and migration scaffolding — all scoped to the `api` schema.
+MCP server for database operations. Provides schema introspection, RLS policy inspection, query generation, SQL execution, and migration scaffolding — all scoped to the `api` schema.
 
 ## Tools
 
@@ -16,7 +16,7 @@ MCP server for Supabase database operations. Provides schema introspection, RLS 
 
 | Tool | Description |
 | --- | --- |
-| `generate_query` | Takes a natural language description and returns a typed Supabase query based on the real schema. |
+| `generate_query` | Takes a natural language description and returns a typed query based on the real schema. |
 | `run_query` | Executes a raw SQL query and returns results. Intended for read-only inspection. |
 
 ### Migrations
@@ -44,10 +44,10 @@ yarn build
 ### .mcp.json entry
 
 ```json
-"supabase": {
+"database": {
   "type": "stdio",
   "command": "node",
-  "args": ["/path/to/supabase-mcp-server/dist/index.js"]
+  "args": ["/path/to/database-mcp-server/dist/index.js"]
 }
 ```
 

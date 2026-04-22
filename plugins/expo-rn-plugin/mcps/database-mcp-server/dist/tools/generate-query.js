@@ -15,7 +15,7 @@ function buildSchemaContext(tables) {
 async function generateQuery(naturalLanguage) {
     const tables = await (0, get_tables_1.getTables)();
     const schemaContext = buildSchemaContext(tables);
-    // Build a typed Supabase query template based on the description.
+    // Build a typed query template based on the description.
     // This gives Claude the schema + a best-effort generated query to refine.
     const queryTemplate = inferQueryFromDescription(naturalLanguage, tables);
     return {

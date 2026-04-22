@@ -2,7 +2,7 @@
   {
     "name": "pending-migrations",
     "command": "${CLAUDE_PLUGIN_ROOT}/scripts/watch-pending-migrations.sh",
-    "description": "Detects Supabase migration files that haven't been applied to the local database",
+    "description": "Detects pending database migration files that haven't been applied to the local database",
     "when": "always"
   },
   {

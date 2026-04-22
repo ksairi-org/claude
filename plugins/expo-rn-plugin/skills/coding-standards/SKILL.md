@@ -1,6 +1,6 @@
 ---
 name: coding-standards
-description: Load coding standards and conventions for this React Native / Expo + Supabase project. Use when you need guidance on TypeScript patterns, Tamagui tokens, Zustand stores, Lingui i18n, Doppler env vars, or Zustand state ownership rules.
+description: Load coding standards and conventions for this React Native / Expo project. Use when you need guidance on TypeScript patterns, Tamagui tokens, Zustand stores, Lingui i18n, Doppler env vars, or Zustand state ownership rules.
 ---
 
 Apply the following standards to all code in this project.
@@ -45,7 +45,7 @@ Apply the following standards to all code in this project.
 | Server state | react-query / orval hooks |
 | Client/UI state | Zustand |
 
-If data comes from Supabase it belongs in react-query. Zustand stores should be thin.
+If data comes from the backend it belongs in react-query. Zustand stores should be thin.
 
 ### Store pattern
 

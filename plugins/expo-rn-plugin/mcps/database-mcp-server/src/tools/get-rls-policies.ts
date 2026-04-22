@@ -1,4 +1,4 @@
-import { runSql } from "../supabase";
+import { runSql } from "../db-client";
 
 interface RlsPolicy {
   table_name: string;

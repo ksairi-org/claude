@@ -12,10 +12,10 @@ build_server() {
 }
 
 build_server "expo-mcp-server"
-build_server "supabase-mcp-server"
+build_server "database-mcp-server"
 
 if ! git diff --quiet "$MCP_ROOT"; then
   echo "[pre-push] dist/ changed — staging and amending commit..."
-  git add "$MCP_ROOT/expo-mcp-server/dist" "$MCP_ROOT/supabase-mcp-server/dist"
+  git add "$MCP_ROOT/expo-mcp-server/dist" "$MCP_ROOT/database-mcp-server/dist"
   git commit --amend --no-edit --no-verify
 fi

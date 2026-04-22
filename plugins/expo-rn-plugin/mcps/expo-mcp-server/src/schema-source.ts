@@ -1,6 +1,6 @@
 import { readFile } from "fs/promises";
 import { join } from "path";
-import { runSql } from "./supabase.js";
+import { runSql } from "./db-client.js";
 import type { BackendKind } from "./tools/load-config.js";
 
 export interface ColumnInfo {
@@ -71,7 +71,7 @@ function parseSchemaJson(raw: SchemaJson, tableName: string): TableSchema {
   return { columns, enums };
 }
 
-// ─── Supabase schema introspection ────────────────────────────────────────────
+// ─── Database schema introspection ───────────────────────────────────────────
 
 function pgIdent(name: string): string {
   if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) {
@@ -80,7 +80,7 @@ function pgIdent(name: string): string {
   return name;
 }
 
-async function getSupabaseSchema(tableName: string, schema: string): Promise<TableSchema> {
+async function getDatabaseSchema(tableName: string, schema: string): Promise<TableSchema> {
   const safeTable = pgIdent(tableName);
   const safeSchema = pgIdent(schema);
   const rawColumns = await runSql(`
@@ -146,12 +146,12 @@ async function getSupabaseSchema(tableName: string, schema: string): Promise<Tab
 export async function getTableSchema(
   tableName: string,
   backend: BackendKind,
-  supabaseSchema: string,
+  databaseSchema: string,
   schemaPath: string | undefined,
   projectRoot: string,
 ): Promise<TableSchema> {
   if (backend === "supabase") {
-    return getSupabaseSchema(tableName, supabaseSchema);
+    return getDatabaseSchema(tableName, databaseSchema);
   }
 
   if (!schemaPath) {

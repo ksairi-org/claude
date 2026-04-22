@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getTables = getTables;
-const supabase_1 = require("../supabase");
+const db_client_1 = require("../db-client");
 async function getTables() {
-    const rows = await (0, supabase_1.runSql)(`
+    const rows = await (0, db_client_1.runSql)(`
     SELECT
       c.table_name,
       c.column_name,

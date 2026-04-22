@@ -1,5 +1,5 @@
 {
-  "supabase": {
+  "database": {
     "schema": "api"
   },
   "components": {
