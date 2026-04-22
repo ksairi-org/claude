@@ -1,0 +1,17 @@
+{
+  "name": "ksairi",
+  "owner": {
+    "name": "Mariano Ksairi",
+    "email": "marianoksairi@gmail.com"
+  },
+  "metadata": {
+    "description": "Mariano Ksairi's local Claude Code plugins"
+  },
+  "plugins": [
+    {
+      "name": "expo-rn-plugin",
+      "source": "./plugins/expo-rn-plugin",
+      "description": "Claude Code plugin for React Native / Expo + Supabase projects. MCP servers, scaffolding, Figma sync, i18n review, and RTK token optimization."
+    }
+  ]
+}

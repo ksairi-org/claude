@@ -74,7 +74,7 @@ const store = useUserStore();
 
 ## Env Vars / Doppler
 
-- Secrets via Doppler — see `.mcp-project` for project name, `.mcp-env` for config
+- Secrets via Doppler — project and config set in plugin configuration (`/plugin configure expo-rn-plugin`)
 - Adding a new secret requires three steps:
   1. Add to `env.template.yaml`: `VAR_NAME={{ .VAR_NAME }}`
   2. Set in all configs: `doppler secrets set VAR_NAME="value" --project <p> --config dev/stg/prod`

@@ -3,6 +3,7 @@ import { join } from "path";
 import { createSign } from "crypto";
 import { runSql } from "../supabase.js";
 import { loadConfig } from "./load-config.js";
+import type { BackendKind } from "./load-config.js";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -110,16 +111,10 @@ export interface InspectPushTokensResult {
 const DEFAULT_TOKENS_TABLE = "device_tokens";
 const DEFAULT_TOKEN_LIMIT = 10;
 
-export async function inspectPushTokens(
-  options: InspectPushTokensOptions,
+async function inspectSupabaseTokens(
+  tableName: string,
+  limit: number,
 ): Promise<InspectPushTokensResult> {
-  const config = await loadConfig(options.projectRoot);
-  const tableName =
-    options.tableName ??
-    config.firebase?.deviceTokensTable ??
-    DEFAULT_TOKENS_TABLE;
-  const limit = options.limit ?? DEFAULT_TOKEN_LIMIT;
-
   const existsRows = await runSql(`
     SELECT 1
     FROM information_schema.tables
@@ -170,14 +165,46 @@ export async function inspectPushTokens(
     created_at: typeof row.created_at === "string" ? row.created_at : "",
   }));
 
+  return { tableExists: true, tableName, total, byPlatform, recentTokens, suggestedMigration: null };
+}
+
+function unsupportedInspectResult(
+  tableName: string,
+  backend: BackendKind,
+): InspectPushTokensResult {
   return {
-    tableExists: true,
+    tableExists: false,
     tableName,
-    total,
-    byPlatform,
-    recentTokens,
-    suggestedMigration: null,
+    total: 0,
+    byPlatform: {},
+    recentTokens: [],
+    suggestedMigration:
+      backend === "firebase"
+        ? `// Token inspection is not available server-side for Firebase.\n` +
+          `// Query the "${tableName}" Firestore collection directly in the Firebase console,\n` +
+          `// or use the Admin SDK in a Cloud Function to list documents.`
+        : `// Token inspection is not available for REST backends.\n` +
+          `// Use your API's admin interface or database tool to query stored tokens.\n` +
+          `// Pass a token directly to send_test_push to test delivery.`,
   };
+}
+
+export async function inspectPushTokens(
+  options: InspectPushTokensOptions,
+): Promise<InspectPushTokensResult> {
+  const config = await loadConfig(options.projectRoot);
+  const backend = config.backend;
+  const tableName =
+    options.tableName ??
+    config.firebase?.deviceTokensTable ??
+    DEFAULT_TOKENS_TABLE;
+  const limit = options.limit ?? DEFAULT_TOKEN_LIMIT;
+
+  if (backend !== "supabase") {
+    return unsupportedInspectResult(tableName, backend);
+  }
+
+  return inspectSupabaseTokens(tableName, limit);
 }
 
 function generateMigration(tableName: string): string {

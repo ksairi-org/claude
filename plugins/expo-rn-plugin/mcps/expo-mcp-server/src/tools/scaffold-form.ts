@@ -1,24 +1,15 @@
-import { runSql } from "../supabase.js";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface ColumnInfo {
-  column_name: string;
-  data_type: string;
-  udt_name: string;
-  is_nullable: string;
-  column_default: string | null;
-}
-
-interface EnumType {
-  enum_name: string;
-  enum_values: string[];
-}
+import { getTableSchema } from "../schema-source.js";
+import type { ColumnInfo } from "../schema-source.js";
+import { loadConfig } from "./load-config.js";
+import type { BackendKind } from "./load-config.js";
 
 export interface ScaffoldFormOptions {
   tableName: string;
+  projectRoot: string;
   /** Skip id / created_at / updated_at / deleted_at. Default: true */
   omitAutoFields?: boolean;
+  /** Override the backend from mcp.config.json */
+  backend?: BackendKind;
 }
 
 export interface ScaffoldFormResult {
@@ -194,7 +185,7 @@ function generateSchemaCode(
   return [
     `import { z } from "zod";`,
     ``,
-    `// Generated from Supabase \`api.${tableName}\` schema`,
+    `// Generated from \`${tableName}\` schema`,
     `export const ${toCamelCase(tableName)}Schema = z.object({`,
     fields,
     `});`,
@@ -416,82 +407,26 @@ function generateComponentCode(
 export async function scaffoldForm(
   options: ScaffoldFormOptions,
 ): Promise<ScaffoldFormResult> {
-  const { tableName, omitAutoFields = true } = options;
+  const { tableName, projectRoot, omitAutoFields = true } = options;
   const pascalName = toPascalCase(tableName);
+  const config = await loadConfig(projectRoot);
+  const backend = options.backend ?? config.backend;
 
-  // 1. Fetch columns
-  const rawColumns = await runSql(`
-    SELECT
-      c.column_name,
-      c.data_type,
-      c.udt_name,
-      c.is_nullable,
-      c.column_default
-    FROM information_schema.columns c
-    WHERE c.table_schema = 'api'
-      AND c.table_name = '${tableName}'
-    ORDER BY c.ordinal_position
-  `);
+  const { columns: rawColumns, enums } = await getTableSchema(
+    tableName,
+    backend,
+    config.supabase.schema ?? "public",
+    config.schemaPath,
+    projectRoot,
+  );
 
-  if (rawColumns.length === 0) {
-    throw new Error(
-      `Table "${tableName}" not found in the api schema. Run get_tables to see available tables.`,
-    );
-  }
+  const columns = omitAutoFields
+    ? rawColumns.filter((c) => !AUTO_FIELDS.has(c.column_name))
+    : rawColumns;
 
-  let columns = (rawColumns as Array<Record<string, unknown>>).map((col) => ({
-    column_name: col.column_name as string,
-    data_type: col.data_type as string,
-    udt_name: col.udt_name as string,
-    is_nullable: col.is_nullable as string,
-    column_default: col.column_default as string | null,
-  }));
-
-  if (omitAutoFields) {
-    columns = columns.filter((c) => !AUTO_FIELDS.has(c.column_name));
-  }
-
-  // 2. Fetch enum types used by this table
-  const udtNames = [
-    ...new Set(
-      columns
-        .filter((c) => c.data_type === "USER-DEFINED")
-        .map((c) => c.udt_name),
-    ),
-  ];
-
-  const enums = new Map<string, string[]>();
-
-  if (udtNames.length > 0) {
-    const quotedNames = udtNames.map((n) => `'${n}'`).join(", ");
-    const enumRows = await runSql(`
-      SELECT
-        t.typname AS enum_name,
-        array_agg(e.enumlabel ORDER BY e.enumsortorder) AS enum_values
-      FROM pg_type t
-      JOIN pg_enum e ON t.oid = e.enumtypid
-      JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
-      WHERE n.nspname = 'api'
-        AND t.typname IN (${quotedNames})
-      GROUP BY t.typname
-    `);
-
-    for (const row of enumRows as Array<Record<string, unknown>>) {
-      const name = row.enum_name as string;
-      const values = row.enum_values as string[];
-      enums.set(name, values);
-    }
-  }
-
-  // 3. Generate code
   const schemaCode = generateSchemaCode(tableName, pascalName, columns, enums);
   const hookCode = generateHookCode(tableName, pascalName, columns, enums);
-  const componentCode = generateComponentCode(
-    tableName,
-    pascalName,
-    columns,
-    enums,
-  );
+  const componentCode = generateComponentCode(tableName, pascalName, columns, enums);
 
   return { tableName, pascalName, schemaCode, hookCode, componentCode };
 }
@@ -502,7 +437,7 @@ export function formatScaffoldResult(result: ScaffoldFormResult): string {
   return [
     `# Form Scaffold — \`${tableName}\``,
     ``,
-    `> Generated for table \`api.${tableName}\`. Copy each file into your project.`,
+    `> Generated for \`${tableName}\`. Copy each file into your project.`,
     ``,
     `---`,
     ``,

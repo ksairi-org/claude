@@ -18,11 +18,15 @@
   ],
   "userConfig": {
     "doppler_project": {
+      "title": "Doppler Project",
       "description": "Doppler project name for secret management (e.g. my-app)",
+      "type": "string",
       "sensitive": false
     },
     "doppler_config": {
-      "description": "Doppler config to use (dev / stg / prod)",
+      "title": "Doppler Config",
+      "description": "Doppler config to use (dev / stg / prod, default: dev)",
+      "type": "string",
       "sensitive": false
     }
   },

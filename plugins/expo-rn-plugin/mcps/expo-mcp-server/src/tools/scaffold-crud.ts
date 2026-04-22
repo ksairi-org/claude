@@ -1,15 +1,7 @@
-import { runSql } from "../supabase.js";
+import { getTableSchema } from "../schema-source.js";
+import type { ColumnInfo } from "../schema-source.js";
 import { loadConfig } from "./load-config.js";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface ColumnInfo {
-  column_name: string;
-  data_type: string;
-  udt_name: string;
-  is_nullable: string;
-  column_default: string | null;
-}
+import type { BackendKind } from "./load-config.js";
 
 export interface ScaffoldCrudOptions {
   tableName: string;
@@ -22,6 +14,8 @@ export interface ScaffoldCrudOptions {
    * no create screen is generated.
    */
   includeForm?: boolean;
+  /** Override the backend from mcp.config.json */
+  backend?: BackendKind;
 }
 
 interface RouteFile {
@@ -174,7 +168,7 @@ function generateTypesCode(
     .join("\n");
 
   return [
-    `// Generated from Supabase \`api.${tableName}\``,
+    `// Generated from \`${tableName}\``,
     ``,
     `export interface ${pascalName}Row {`,
     rowFields,
@@ -190,12 +184,8 @@ function generateTypesCode(
   ].join("\n");
 }
 
-function generateHooksCode(
-  tableName: string,
-  pascalName: string,
-): string {
+function generateSupabaseHooksCode(tableName: string, pascalName: string): string {
   const queryKeyConst = `${toCamelCase(tableName).toUpperCase()}_QUERY_KEY`;
-
   return [
     `import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";`,
     `import { supabase } from "@react-auth-client";`,
@@ -277,6 +267,166 @@ function generateHooksCode(
     `  });`,
     `}`,
   ].join("\n");
+}
+
+function generateFirebaseHooksCode(tableName: string, pascalName: string): string {
+  const queryKeyConst = `${toCamelCase(tableName).toUpperCase()}_QUERY_KEY`;
+  return [
+    `import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";`,
+    `import {`,
+    `  collection,`,
+    `  doc,`,
+    `  getDocs,`,
+    `  getDoc,`,
+    `  addDoc,`,
+    `  updateDoc,`,
+    `  deleteDoc,`,
+    `} from "firebase/firestore";`,
+    `import { db } from "@react-auth-client";`,
+    `import type { ${pascalName}Row, Create${pascalName}Input, Update${pascalName}Input } from "./${pascalName}Types";`,
+    ``,
+    `const ${queryKeyConst} = ["${tableName}"] as const;`,
+    `const col = () => collection(db, "${tableName}");`,
+    `const ref = (id: string) => doc(db, "${tableName}", id);`,
+    ``,
+    `export function useList${pascalName}() {`,
+    `  return useQuery({`,
+    `    queryKey: ${queryKeyConst},`,
+    `    queryFn: async () => {`,
+    `      const snap = await getDocs(col());`,
+    `      return snap.docs.map((d) => ({ id: d.id, ...d.data() } as ${pascalName}Row));`,
+    `    },`,
+    `  });`,
+    `}`,
+    ``,
+    `export function useGet${pascalName}(id: string) {`,
+    `  return useQuery({`,
+    `    queryKey: [...${queryKeyConst}, id],`,
+    `    queryFn: async () => {`,
+    `      const snap = await getDoc(ref(id));`,
+    `      if (!snap.exists()) throw new Error("Not found");`,
+    `      return { id: snap.id, ...snap.data() } as ${pascalName}Row;`,
+    `    },`,
+    `    enabled: !!id,`,
+    `  });`,
+    `}`,
+    ``,
+    `export function useCreate${pascalName}() {`,
+    `  const qc = useQueryClient();`,
+    `  return useMutation({`,
+    `    mutationFn: async (input: Create${pascalName}Input) => {`,
+    `      const docRef = await addDoc(col(), input);`,
+    `      return { id: docRef.id, ...input } as ${pascalName}Row;`,
+    `    },`,
+    `    onSuccess: () => qc.invalidateQueries({ queryKey: ${queryKeyConst} }),`,
+    `  });`,
+    `}`,
+    ``,
+    `export function useUpdate${pascalName}(id: string) {`,
+    `  const qc = useQueryClient();`,
+    `  return useMutation({`,
+    `    mutationFn: async (input: Update${pascalName}Input) => {`,
+    `      await updateDoc(ref(id), input as Record<string, unknown>);`,
+    `      return { id, ...input } as ${pascalName}Row;`,
+    `    },`,
+    `    onSuccess: () => {`,
+    `      qc.invalidateQueries({ queryKey: ${queryKeyConst} });`,
+    `      qc.invalidateQueries({ queryKey: [...${queryKeyConst}, id] });`,
+    `    },`,
+    `  });`,
+    `}`,
+    ``,
+    `export function useDelete${pascalName}() {`,
+    `  const qc = useQueryClient();`,
+    `  return useMutation({`,
+    `    mutationFn: async (id: string) => {`,
+    `      await deleteDoc(ref(id));`,
+    `    },`,
+    `    onSuccess: () => qc.invalidateQueries({ queryKey: ${queryKeyConst} }),`,
+    `  });`,
+    `}`,
+  ].join("\n");
+}
+
+function generateRestHooksCode(tableName: string, pascalName: string): string {
+  const queryKeyConst = `${toCamelCase(tableName).toUpperCase()}_QUERY_KEY`;
+  return [
+    `import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";`,
+    `import type { ${pascalName}Row, Create${pascalName}Input, Update${pascalName}Input } from "./${pascalName}Types";`,
+    ``,
+    `const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? "";`,
+    `const ${queryKeyConst} = ["${tableName}"] as const;`,
+    ``,
+    `async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {`,
+    `  const res = await fetch(\`\${API_BASE}\${path}\`, {`,
+    `    headers: { "Content-Type": "application/json", ...init?.headers },`,
+    `    ...init,`,
+    `  });`,
+    `  if (!res.ok) throw new Error(\`API error \${res.status}: \${await res.text()}\`);`,
+    `  return res.json() as Promise<T>;`,
+    `}`,
+    ``,
+    `export function useList${pascalName}() {`,
+    `  return useQuery({`,
+    `    queryKey: ${queryKeyConst},`,
+    `    queryFn: () => apiFetch<${pascalName}Row[]>("/${tableName}"),`,
+    `  });`,
+    `}`,
+    ``,
+    `export function useGet${pascalName}(id: string) {`,
+    `  return useQuery({`,
+    `    queryKey: [...${queryKeyConst}, id],`,
+    `    queryFn: () => apiFetch<${pascalName}Row>("/${tableName}/\${id}"),`,
+    `    enabled: !!id,`,
+    `  });`,
+    `}`,
+    ``,
+    `export function useCreate${pascalName}() {`,
+    `  const qc = useQueryClient();`,
+    `  return useMutation({`,
+    `    mutationFn: (input: Create${pascalName}Input) =>`,
+    `      apiFetch<${pascalName}Row>("/${tableName}", {`,
+    `        method: "POST",`,
+    `        body: JSON.stringify(input),`,
+    `      }),`,
+    `    onSuccess: () => qc.invalidateQueries({ queryKey: ${queryKeyConst} }),`,
+    `  });`,
+    `}`,
+    ``,
+    `export function useUpdate${pascalName}(id: string) {`,
+    `  const qc = useQueryClient();`,
+    `  return useMutation({`,
+    `    mutationFn: (input: Update${pascalName}Input) =>`,
+    `      apiFetch<${pascalName}Row>("/${tableName}/\${id}", {`,
+    `        method: "PATCH",`,
+    `        body: JSON.stringify(input),`,
+    `      }),`,
+    `    onSuccess: () => {`,
+    `      qc.invalidateQueries({ queryKey: ${queryKeyConst} });`,
+    `      qc.invalidateQueries({ queryKey: [...${queryKeyConst}, id] });`,
+    `    },`,
+    `  });`,
+    `}`,
+    ``,
+    `export function useDelete${pascalName}() {`,
+    `  const qc = useQueryClient();`,
+    `  return useMutation({`,
+    `    mutationFn: (id: string) =>`,
+    `      apiFetch<void>("/${tableName}/\${id}", { method: "DELETE" }),`,
+    `    onSuccess: () => qc.invalidateQueries({ queryKey: ${queryKeyConst} }),`,
+    `  });`,
+    `}`,
+  ].join("\n");
+}
+
+function generateHooksCode(
+  tableName: string,
+  pascalName: string,
+  backend: BackendKind,
+): string {
+  if (backend === "firebase") return generateFirebaseHooksCode(tableName, pascalName);
+  if (backend === "rest") return generateRestHooksCode(tableName, pascalName);
+  return generateSupabaseHooksCode(tableName, pascalName);
 }
 
 function generateListScreenCode(
@@ -580,73 +730,22 @@ export async function scaffoldCrud(
   const { tableName, projectRoot, omitAutoFields = true, includeForm = false } = options;
   const pascalName = toPascalCase(tableName);
   const config = await loadConfig(projectRoot);
+  const backend = options.backend ?? config.backend;
   const screensDir = config.components.screens ?? "src/screens";
   const routesDir = config.routesDir;
 
-  // 1. Fetch all columns
-  const rawColumns = await runSql(`
-    SELECT
-      c.column_name,
-      c.data_type,
-      c.udt_name,
-      c.is_nullable,
-      c.column_default
-    FROM information_schema.columns c
-    WHERE c.table_schema = 'api'
-      AND c.table_name = '${tableName}'
-    ORDER BY c.ordinal_position
-  `);
-
-  if (rawColumns.length === 0) {
-    throw new Error(
-      `Table "${tableName}" not found in the api schema. Run get_tables to see available tables.`,
-    );
-  }
-
-  const allColumns = (rawColumns as Array<Record<string, unknown>>).map(
-    (col) => ({
-      column_name: col.column_name as string,
-      data_type: col.data_type as string,
-      udt_name: col.udt_name as string,
-      is_nullable: col.is_nullable as string,
-      column_default: col.column_default as string | null,
-    }),
+  const { columns: allColumns, enums } = await getTableSchema(
+    tableName,
+    backend,
+    config.supabase.schema ?? "public",
+    config.schemaPath,
+    projectRoot,
   );
 
   const writeColumns = omitAutoFields
     ? allColumns.filter((c) => !AUTO_FIELDS.has(c.column_name))
     : allColumns;
 
-  // 2. Fetch enum types
-  const udtNames = [
-    ...new Set(
-      allColumns
-        .filter((c) => c.data_type === "USER-DEFINED")
-        .map((c) => c.udt_name),
-    ),
-  ];
-
-  const enums = new Map<string, string[]>();
-
-  if (udtNames.length > 0) {
-    const quotedNames = udtNames.map((n) => `'${n}'`).join(", ");
-    const enumRows = await runSql(`
-      SELECT
-        t.typname AS enum_name,
-        array_agg(e.enumlabel ORDER BY e.enumsortorder) AS enum_values
-      FROM pg_type t
-      JOIN pg_enum e ON t.oid = e.enumtypid
-      JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
-      WHERE n.nspname = 'api'
-        AND t.typname IN (${quotedNames})
-      GROUP BY t.typname
-    `);
-    for (const row of enumRows as Array<Record<string, unknown>>) {
-      enums.set(row.enum_name as string, row.enum_values as string[]);
-    }
-  }
-
-  // 3. Generate code
   const displayField = findDisplayField(allColumns);
 
   return {
@@ -656,7 +755,7 @@ export async function scaffoldCrud(
     routesDir,
     includeForm,
     typesCode: generateTypesCode(tableName, pascalName, allColumns, writeColumns, enums),
-    hooksCode: generateHooksCode(tableName, pascalName),
+    hooksCode: generateHooksCode(tableName, pascalName, backend),
     listScreenCode: generateListScreenCode(tableName, pascalName, displayField),
     detailScreenCode: generateDetailScreenCode(tableName, pascalName, includeForm),
     createScreenCode: includeForm ? generateCreateScreenCode(tableName, pascalName) : null,
@@ -712,20 +811,20 @@ export function formatScaffoldCrudResult(result: ScaffoldCrudResult): string {
         `2. Place all files in \`${screenPath}/\``,
         `3. Export screens from \`${screensDir}/index.ts\``,
         `4. Add route files at the paths listed above`,
-        `5. The hooks use \`@react-auth-client\` for the Supabase client — verify this alias matches your project`,
+        `5. Verify the client import alias in the hooks file matches your project`,
       ]
     : [
         `1. Place all files in \`${screenPath}/\``,
         `2. Export screens from \`${screensDir}/index.ts\``,
         `3. Add route files at the paths listed above`,
-        `4. The hooks use \`@react-auth-client\` for the Supabase client — verify this alias matches your project`,
+        `4. Verify the client import alias in the hooks file matches your project`,
         `5. The detail screen is read-only. To add editing, run \`scaffold_form\` and set \`includeForm: true\` on this tool, or wire in your own edit UI`,
       ];
 
   return [
     `# CRUD Scaffold — \`${tableName}\``,
     ``,
-    `> Generated for table \`api.${tableName}\`. Copy files into \`${screenPath}/\`.`,
+    `> Generated for \`${tableName}\`. Copy files into \`${screenPath}/\`.`,
     ``,
     `---`,
     ``,

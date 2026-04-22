@@ -20,6 +20,11 @@
 - Use `` t`…` `` for prop strings (placeholders, aria labels, alert titles, etc.)
 - Import `Trans, useLingui` from `@lingui/react/macro`
 
+### Package Manager
+
+- Always use `yarn` — never `npm`, `npx`, or `pnpm`
+- Run scripts with `yarn <script>`, install with `yarn add`, execute one-off packages with `yarn dlx <package>`
+
 ### General
 
 - Keep solutions simple and focused — no over-engineering
@@ -116,7 +121,7 @@ const store = useUserStore();
 
 ## Env Vars / Doppler
 
-- Secrets managed via Doppler — see `.mcp-project` for the Doppler project name, `.mcp-env` for the default config
+- Secrets managed via Doppler — project and config set via `/plugin configure expo-rn-plugin`
 - To add a new secret, follow all three steps in order:
 
   1. Add the var name to `env.template.yaml`:

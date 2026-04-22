@@ -49,10 +49,20 @@ server.registerTool(
       "Creates mcp.config.json in the project root by auto-detecting the project structure (router, component directories, libs, i18n, orval). Run once when setting up a new project. Skips creation if the file already exists unless overwrite is true.",
     inputSchema: {
       projectRoot: z.string().describe("Absolute path to the project root"),
+      backend: z
+        .enum(["supabase", "firebase", "rest"])
+        .optional()
+        .describe('Backend to use for data. Defaults to "supabase".'),
       supabaseSchema: z
         .string()
         .optional()
-        .describe('Supabase schema name. Defaults to "api".'),
+        .describe('Supabase schema name. Only used when backend is "supabase". Defaults to "api".'),
+      schemaPath: z
+        .string()
+        .optional()
+        .describe(
+          'Path to schema.json (relative to projectRoot or absolute). Required when backend is "firebase" or "rest".',
+        ),
       sourceLocale: z
         .string()
         .optional()
@@ -67,8 +77,8 @@ server.registerTool(
         .describe("Overwrite existing mcp.config.json. Default: false."),
     },
   },
-  async ({ projectRoot, supabaseSchema, sourceLocale, targetLocales, overwrite }) => {
-    const result = await initProjectConfig({ projectRoot, supabaseSchema, sourceLocale, targetLocales, overwrite });
+  async ({ projectRoot, backend, supabaseSchema, schemaPath, sourceLocale, targetLocales, overwrite }) => {
+    const result = await initProjectConfig({ projectRoot, backend, supabaseSchema, schemaPath, sourceLocale, targetLocales, overwrite });
     return { content: [{ type: "text", text: formatInitResult(result) }] };
   },
 );
@@ -84,12 +94,18 @@ server.registerTool(
         .describe(
           "Absolute path to the React Native project root, e.g. /Users/you/projects/my-app",
         ),
+      summary: z
+        .boolean()
+        .optional()
+        .describe(
+          "Return component names only (no props or paths). Use when you only need to check what exists before generating new components. Default: false.",
+        ),
     },
   },
-  async ({ projectRoot }) => {
+  async ({ projectRoot, summary }) => {
     const { library, config } = await getComponents(projectRoot);
     return {
-      content: [{ type: "text", text: formatComponentLibrary(library, config) }],
+      content: [{ type: "text", text: formatComponentLibrary(library, config, summary) }],
     };
   },
 );
@@ -159,13 +175,16 @@ server.registerTool(
   "scaffold_form",
   {
     description:
-      "Generates a Zod schema, react-hook-form hook, and React Native form component from a Supabase table. Use this when building a create/edit form for any table in the api schema.",
+      "Generates a Zod schema, react-hook-form hook, and React Native form component from a table or collection. For Supabase projects the schema is read from the database automatically; for Firebase and REST projects it reads from the schema.json file configured in mcp.config.json.",
     inputSchema: {
       tableName: z
         .string()
         .describe(
-          "Name of the table in the api schema to scaffold a form for, e.g. \"transactions\"",
+          'Name of the table or collection to scaffold a form for, e.g. "transactions"',
         ),
+      projectRoot: z
+        .string()
+        .describe("Absolute path to the React Native project root"),
       omitAutoFields: z
         .boolean()
         .optional()
@@ -174,8 +193,8 @@ server.registerTool(
         ),
     },
   },
-  async ({ tableName, omitAutoFields }) => {
-    const result = await scaffoldForm({ tableName, omitAutoFields });
+  async ({ tableName, projectRoot, omitAutoFields }) => {
+    const result = await scaffoldForm({ tableName, projectRoot, omitAutoFields });
     return {
       content: [{ type: "text", text: formatScaffoldResult(result) }],
     };
@@ -186,7 +205,7 @@ server.registerTool(
   "scaffold_crud",
   {
     description:
-      "Generates TypeScript types, react-query CRUD hooks, List/Detail/Create screens, and Expo Router route files from a Supabase table. Run scaffold_form first (or alongside) to get the form component the detail and create screens depend on.",
+      "Generates TypeScript types, react-query CRUD hooks, List/Detail/Create screens, and Expo Router route files from a table or collection. Works with Supabase (auto-introspects schema), Firebase (Firestore hooks), and plain REST APIs. Run scaffold_form first (or alongside) to get the form component the detail and create screens depend on.",
     inputSchema: {
       tableName: z
         .string()
@@ -254,8 +273,76 @@ server.registerTool(
   async ({ projectRoot, extract, checks }) => {
     const config = await loadConfig(projectRoot);
     const result = await runI18nCheck(projectRoot, config, { extract, checks });
+    const lines: string[] = [];
+
+    const s = result.summary;
+    const totals = Object.entries(s)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(" | ");
+    lines.push(`## i18n check summary\n${totals}`);
+
+    if (result.errors.length > 0) {
+      lines.push(`\n### Errors\n${result.errors.map((e) => `- ${e}`).join("\n")}`);
+    }
+    if (result.untranslated.length > 0) {
+      lines.push(
+        `\n### Untranslated (${result.untranslated.length})\n` +
+          result.untranslated.map((r) => `- [${r.locale}] ${r.key} (${r.reason})`).join("\n"),
+      );
+    }
+    if (result.missingKeys.length > 0) {
+      lines.push(
+        `\n### Missing keys (${result.missingKeys.length})\n` +
+          result.missingKeys
+            .map((r) => `- [${r.locale}] ${r.key} — source: "${r.sourceValue}"`)
+            .join("\n"),
+      );
+    }
+    if (result.hardcoded.length > 0) {
+      lines.push(
+        `\n### Hardcoded strings (${result.hardcoded.length})\n` +
+          result.hardcoded
+            .map((r) => `- ${r.file}:${r.line} "${r.text}" (${r.context})`)
+            .join("\n"),
+      );
+    }
+    if (result.variableMismatches && result.variableMismatches.length > 0) {
+      lines.push(
+        `\n### Variable mismatches (${result.variableMismatches.length})\n` +
+          result.variableMismatches
+            .map(
+              (r) =>
+                `- [${r.locale}] ${r.key}` +
+                (r.missingVars.length ? ` missing: {${r.missingVars.join("}, {")}}` : "") +
+                (r.extraVars.length ? ` extra: {${r.extraVars.join("}, {")}}` : ""),
+            )
+            .join("\n"),
+      );
+    }
+    if (result.pluralFormIssues && result.pluralFormIssues.length > 0) {
+      lines.push(
+        `\n### Plural form issues (${result.pluralFormIssues.length})\n` +
+          result.pluralFormIssues
+            .map(
+              (r) =>
+                `- [${r.locale}] ${r.key} — expected: [${r.expectedForms.join(", ")}] found: [${r.foundForms.join(", ")}]`,
+            )
+            .join("\n"),
+      );
+    }
+    if (result.extraction) {
+      const ex = result.extraction;
+      if (ex.newKeys.length > 0 || ex.removedKeys.length > 0) {
+        lines.push(
+          `\n### Extract changes\n` +
+            (ex.newKeys.length ? `New keys (${ex.newKeys.length}): ${ex.newKeys.slice(0, 10).join(", ")}${ex.newKeys.length > 10 ? "…" : ""}` : "") +
+            (ex.removedKeys.length ? `\nRemoved keys (${ex.removedKeys.length}): ${ex.removedKeys.slice(0, 10).join(", ")}${ex.removedKeys.length > 10 ? "…" : ""}` : ""),
+        );
+      }
+    }
+
     return {
-      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      content: [{ type: "text", text: lines.join("\n") }],
     };
   },
 );
@@ -266,7 +353,7 @@ server.registerTool(
   "inspect_push_tokens",
   {
     description:
-      "Inspect FCM push tokens stored in your Supabase database. Returns token counts by platform and a preview of recent tokens. If the table doesn't exist yet, returns a ready-to-run migration SQL to create it.",
+      "Inspect FCM push tokens stored in your backend. For Supabase projects: queries the device tokens table and returns counts by platform, recent tokens, and a migration if the table is missing. For Firebase and REST projects: returns guidance on how to inspect tokens directly.",
     inputSchema: {
       projectRoot: z.string().describe("Absolute path to the project root"),
       tableName: z
@@ -430,7 +517,7 @@ server.registerPrompt(
               `doppler secrets set ${fullName}="<value>" --project <project> --config stg`,
               `doppler secrets set ${fullName}="<value>" --project <project> --config prod`,
               "```",
-              "The project name is in `.mcp-project`, the default config in `.mcp-env`.",
+              "Configure the Doppler project via `/plugin configure expo-rn-plugin`.",
               "",
               "## Step 3 — Sync to local .env",
               "```bash",

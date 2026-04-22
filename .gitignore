@@ -7,6 +7,8 @@
 # Dependencies
 node_modules/
 dist/
+!plugins/expo-rn-plugin/mcps/expo-mcp-server/dist/
+!plugins/expo-rn-plugin/mcps/supabase-mcp-server/dist/
 
 # Yarn
 .yarn/cache

@@ -10,8 +10,15 @@ interface RlsPolicy {
   with_check: string | null;
 }
 
+function pgIdent(name: string): string {
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) {
+    throw new Error(`Invalid SQL identifier: "${name}"`);
+  }
+  return name;
+}
+
 export async function getRlsPolicies(tableName?: string): Promise<RlsPolicy[]> {
-  const tableFilter = tableName ? `AND tablename = '${tableName}'` : "";
+  const tableFilter = tableName ? `AND tablename = '${pgIdent(tableName)}'` : "";
 
   const rows = await runSql(`
     SELECT tablename, policyname, cmd, permissive, roles, qual, with_check

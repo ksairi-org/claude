@@ -4,7 +4,9 @@ import { glob } from "glob";
 
 interface InitOptions {
   projectRoot: string;
+  backend?: "supabase" | "firebase" | "rest";
   supabaseSchema?: string;
+  schemaPath?: string;
   sourceLocale?: string;
   targetLocales?: string[];
   overwrite?: boolean;
@@ -96,7 +98,15 @@ async function detectOrval(projectRoot: string): Promise<object | undefined> {
 }
 
 export async function initProjectConfig(options: InitOptions): Promise<InitResult> {
-  const { projectRoot, supabaseSchema = "api", sourceLocale = "en", targetLocales = ["es"], overwrite = false } = options;
+  const {
+    projectRoot,
+    backend = "supabase",
+    supabaseSchema = "api",
+    schemaPath,
+    sourceLocale = "en",
+    targetLocales = ["es"],
+    overwrite = false,
+  } = options;
   const configPath = join(projectRoot, "mcp.config.json");
   const warnings: string[] = [];
 
@@ -115,22 +125,23 @@ export async function initProjectConfig(options: InitOptions): Promise<InitResul
 
   if (!i18n) warnings.push("No i18n locales directory detected — add the i18n section manually if you use Lingui.");
   if (!orval) warnings.push("No orval SDK directory detected — add the orval section manually if you use orval.");
+  if (backend !== "supabase" && !schemaPath) {
+    warnings.push(
+      `backend is "${backend}" but no schemaPath was provided. Add "schemaPath": "schema.json" to mcp.config.json and create the file.`,
+    );
+  }
 
-  const config: Record<string, unknown> = {
-    supabase: { schema: supabaseSchema },
-    components,
-    libs,
-    router,
-    routesDir,
-  };
+  const config: Record<string, unknown> = { backend, components, libs, router, routesDir };
 
+  if (backend === "supabase") {
+    config.supabase = { schema: supabaseSchema };
+  }
+  if (schemaPath) {
+    config.schemaPath = schemaPath;
+  }
   if (orval) config.orval = orval;
   if (i18n) {
-    config.i18n = {
-      ...(i18n as object),
-      sourceLocale,
-      targetLocales,
-    };
+    config.i18n = { ...(i18n as object), sourceLocale, targetLocales };
   }
 
   await writeFile(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8");

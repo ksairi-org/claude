@@ -18,7 +18,18 @@ export interface OrvalConfig {
   sdkLib: string;
 }
 
+export type BackendKind = "supabase" | "firebase" | "rest";
+
+export interface DopplerConfig {
+  project: string;
+  config?: string;
+}
+
 export interface McpConfig {
+  doppler?: DopplerConfig;
+  backend?: BackendKind;
+  /** Path to schema.json (relative to project root or absolute). Required when backend is "firebase" or "rest". */
+  schemaPath?: string;
   supabase?: {
     schema?: string;
   };
@@ -37,14 +48,17 @@ export interface McpConfig {
   orval?: OrvalConfig;
 }
 
-// All fields resolved to defaults except i18n, firebase, and orval, which remain optional
-export type ResolvedMcpConfig = Omit<Required<McpConfig>, "i18n" | "firebase" | "orval"> & {
+// All fields resolved to defaults except i18n, firebase, orval, doppler, and schemaPath, which remain optional
+export type ResolvedMcpConfig = Omit<Required<McpConfig>, "i18n" | "firebase" | "orval" | "schemaPath" | "doppler"> & {
+  schemaPath?: string;
+  doppler?: DopplerConfig;
   i18n?: I18nConfig;
   firebase?: FirebaseConfig;
   orval?: OrvalConfig;
 };
 
 const DEFAULTS: ResolvedMcpConfig = {
+  backend: "supabase",
   supabase: {
     schema: "public",
   },
@@ -70,6 +84,8 @@ export async function loadConfig(
 
     // Deep merge with defaults
     return {
+      backend: parsed.backend ?? DEFAULTS.backend,
+      schemaPath: parsed.schemaPath,
       supabase: { ...DEFAULTS.supabase, ...parsed.supabase },
       components: { ...DEFAULTS.components, ...parsed.components },
       libs: parsed.libs ?? DEFAULTS.libs,
@@ -88,7 +104,9 @@ export async function loadConfig(
 export function configSummary(config: ResolvedMcpConfig): string {
   const lines = [
     "# MCP Config",
-    `Supabase schema: ${config.supabase.schema}`,
+    `Backend: ${config.backend}`,
+    ...(config.backend === "supabase" ? [`Supabase schema: ${config.supabase.schema}`] : []),
+    ...(config.schemaPath ? [`Schema path: ${config.schemaPath}`] : []),
     `Router: ${config.router}`,
     `Routes dir: ${config.routesDir}`,
     "",

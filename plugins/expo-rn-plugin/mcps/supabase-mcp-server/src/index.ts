@@ -21,8 +21,18 @@ server.registerTool(
   },
   async () => {
     const tables = await getTables();
+    const lines: string[] = [`# Tables (${tables.length})\n`];
+    for (const t of tables) {
+      lines.push(`## ${t.table_name}`);
+      for (const c of t.columns) {
+        const nullable = c.is_nullable === "YES" ? "?" : "";
+        const def = c.column_default ? ` = ${c.column_default}` : "";
+        lines.push(`- ${c.column_name}: ${c.data_type}${nullable}${def}`);
+      }
+      lines.push("");
+    }
     return {
-      content: [{ type: "text", text: JSON.stringify(tables, null, 2) }],
+      content: [{ type: "text", text: lines.join("\n") }],
     };
   },
 );
@@ -32,11 +42,37 @@ server.registerTool(
   {
     description:
       "Returns all Row Level Security (RLS) policies defined on your Supabase tables",
+    inputSchema: {
+      tableName: z
+        .string()
+        .optional()
+        .describe("Filter by table name. Omit to return policies for all tables."),
+    },
   },
-  async () => {
-    const policies = await getRlsPolicies();
+  async ({ tableName } = { tableName: undefined }) => {
+    const policies = await getRlsPolicies(tableName);
+    if (policies.length === 0) {
+      return {
+        content: [{ type: "text", text: tableName ? `No RLS policies for table "${tableName}".` : "No RLS policies found." }],
+      };
+    }
+    const byTable: Record<string, typeof policies> = {};
+    for (const p of policies) {
+      (byTable[p.table_name] ??= []).push(p);
+    }
+    const lines: string[] = [`# RLS Policies (${policies.length})\n`];
+    for (const [table, tPolicies] of Object.entries(byTable)) {
+      lines.push(`## ${table}`);
+      for (const p of tPolicies) {
+        const roles = p.roles.length ? ` [${p.roles.join(", ")}]` : "";
+        lines.push(`- **${p.policy_name}** ${p.command} (${p.permissive})${roles}`);
+        if (p.qual) lines.push(`  USING: ${p.qual}`);
+        if (p.with_check) lines.push(`  WITH CHECK: ${p.with_check}`);
+      }
+      lines.push("");
+    }
     return {
-      content: [{ type: "text", text: JSON.stringify(policies, null, 2) }],
+      content: [{ type: "text", text: lines.join("\n") }],
     };
   },
 );

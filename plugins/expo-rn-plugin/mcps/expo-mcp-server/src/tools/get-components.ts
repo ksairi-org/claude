@@ -166,11 +166,17 @@ export async function getComponents(
 export function formatComponentLibrary(
   library: ComponentLibrary,
   config: Awaited<ReturnType<typeof loadConfig>>,
+  summaryOnly = false,
 ): string {
   const sections: string[] = [];
 
   for (const [category, components] of Object.entries(library)) {
     if (components.length === 0) continue;
+
+    if (summaryOnly) {
+      sections.push(`## ${category} (${components.length})\n${components.map((c) => `- ${c.name}`).join("\n")}`);
+      continue;
+    }
 
     const lines = [`## ${category} (${components.length})`];
     for (const comp of components) {

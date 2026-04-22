@@ -1,26 +1,22 @@
 #!/usr/bin/env bash
 # Doppler-aware MCP server runner for expo-rn-plugin.
-# Uses userConfig values exposed as CLAUDE_PLUGIN_OPTION_* env vars.
-# Falls back to .mcp-project / .mcp-env files in the working directory for
-# backwards compatibility with projects bootstrapped before the plugin.
+# Uses userConfig values exposed as CLAUDE_PLUGIN_OPTION_* env vars,
+# with fallback to mcp.config.json in the project root.
 set -euo pipefail
 
 PROJECT="${CLAUDE_PLUGIN_OPTION_DOPPLER_PROJECT:-}"
 CONFIG="${CLAUDE_PLUGIN_OPTION_DOPPLER_CONFIG:-}"
 
-# Fall back to per-project files (legacy bootstrap path)
-if [ -z "$PROJECT" ] && [ -f ".mcp-project" ]; then
-  PROJECT=$(tr -d '[:space:]' < .mcp-project)
+if [ -z "$PROJECT" ] && [ -f "$PWD/mcp.config.json" ]; then
+  PROJECT=$(python3 -c "import json; d=json.load(open('$PWD/mcp.config.json')); print(d.get('doppler',{}).get('project',''))" 2>/dev/null || echo "")
+  CONFIG=$(python3 -c "import json; d=json.load(open('$PWD/mcp.config.json')); print(d.get('doppler',{}).get('config','dev'))" 2>/dev/null || echo "")
 fi
-if [ -z "$CONFIG" ] && [ -f ".mcp-env" ]; then
-  CONFIG=$(tr -d '[:space:]' < .mcp-env)
-fi
+
 CONFIG="${CONFIG:-dev}"
 
 if [ -z "$PROJECT" ]; then
   echo "[expo-rn-plugin] ERROR: Doppler project not configured." >&2
-  echo "[expo-rn-plugin] Either configure via '/plugin configure expo-rn-plugin'" >&2
-  echo "[expo-rn-plugin] or create a .mcp-project file in your project root." >&2
+  echo "[expo-rn-plugin] Add a \"doppler\" section to mcp.config.json or configure the plugin's userConfig." >&2
   exit 1
 fi
 
