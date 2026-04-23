@@ -1,0 +1,7 @@
+{
+  "name": "Seed Design Tokens",
+  "id": "seed-design-tokens-dev",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": ["figma"]
+}

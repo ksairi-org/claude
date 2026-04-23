@@ -1,0 +1,16 @@
+{
+  "name": "@ksairi-org/figma-tamagui-generator",
+  "version": "0.1.0",
+  "description": "Sync Figma Variables to Tamagui design tokens",
+  "type": "module",
+  "bin": {
+    "figma-tamagui-sync": "./bin/figma-tamagui-sync.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "bin",
+    "lib"
+  ]
+}
