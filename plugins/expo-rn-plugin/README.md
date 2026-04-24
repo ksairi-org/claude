@@ -27,11 +27,12 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup-app.sh"
 # → Adds sync-env-vars + sync-design-tokens to package.json; wires pre-start
 # → Scaffolds env.template.yaml; ensures .env is gitignored
 # → Installs typescript-language-server and typescript
-# → Runs doppler setup (interactive) and patches Figma file ID into CLAUDE.md
+# → Runs doppler setup (interactive); auto-fills Figma file ID,
+#    Supabase project ref, and Sentry project into CLAUDE.md
 
-# 4. Edit CLAUDE.md — fill in the three remaining placeholders:
-#    API base URL, Supabase project ref, Sentry project
-#    (all other fields are auto-populated by setup-app.sh)
+# 4. Edit CLAUDE.md — fill in the one remaining placeholder:
+#    API base URL
+#    (project name, Figma file ID, Supabase ref, Sentry project are auto-filled)
 
 # 5. Start Claude
 claude
@@ -117,7 +118,7 @@ When enabling the plugin, you'll be prompted for:
 
 ## Project CLAUDE.md
 
-Keep your project's `CLAUDE.md` lean (under 50 lines). Move detailed standards to the on-demand skill:
+Keep your project's `CLAUDE.md` lean (under 60 lines). Move detailed standards to the on-demand skill:
 
 ```markdown
 # Project

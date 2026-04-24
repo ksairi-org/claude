@@ -222,26 +222,54 @@ else
   doppler setup
 fi
 
-# ── 8. Patch CLAUDE.md with Figma file ID from Doppler ───────────────────────
-FIGMA_PATCHED=false
+# ── 8. Patch CLAUDE.md with values from Doppler ──────────────────────────────
+# Gather all values first, then do one replacement so placeholder variants
+# can't cause mismatches (e.g. if Figma is absent the original placeholder
+# still contains ", Figma file ID" — chained seds would silently no-op).
+
 FIGMA_FILE_ID_VAL=$(doppler secrets get FIGMA_FILE_ID --plain 2>/dev/null || true)
-if [ -n "$FIGMA_FILE_ID_VAL" ]; then
-  sed -i '' \
-    "s|<!-- Fill in: API base URL, Supabase project ref, Sentry project, Figma file ID -->|- Figma file ID: ${FIGMA_FILE_ID_VAL}\n<!-- Fill in: API base URL, Supabase project ref, Sentry project -->|" \
-    "$APP_ROOT/CLAUDE.md"
-  echo "→ Patched CLAUDE.md with Figma file ID from Doppler"
-  FIGMA_PATCHED=true
+
+SUPABASE_REF=""
+SUPABASE_URL_VAL=$(doppler secrets get SUPABASE_URL --plain 2>/dev/null || true)
+if [ -n "$SUPABASE_URL_VAL" ]; then
+  SUPABASE_REF=$(echo "$SUPABASE_URL_VAL" | sed 's|https://||;s|\.supabase\.co.*||')
 fi
+
+SENTRY_PROJECT_VAL=""
+if [ -f "$APP_ROOT/sentry.properties" ]; then
+  SENTRY_PROJECT_VAL=$(grep "^defaults.project=" "$APP_ROOT/sentry.properties" | cut -d= -f2 || true)
+fi
+if [ -z "$SENTRY_PROJECT_VAL" ]; then
+  SENTRY_PROJECT_VAL=$(doppler secrets get SENTRY_PROJECT --plain 2>/dev/null || true)
+fi
+
+# Build replacement: bullet lines for found values + one remaining placeholder
+FILLED_LINES=""
+REMAINING_FIELDS="API base URL"
+[ -n "$FIGMA_FILE_ID_VAL" ] && FILLED_LINES="${FILLED_LINES}- Figma file ID: ${FIGMA_FILE_ID_VAL}\n"
+[ -n "$SUPABASE_REF" ]       && FILLED_LINES="${FILLED_LINES}- Supabase project ref: ${SUPABASE_REF}\n"
+[ -n "$SENTRY_PROJECT_VAL" ] && FILLED_LINES="${FILLED_LINES}- Sentry project: ${SENTRY_PROJECT_VAL}\n"
+[ -z "$FIGMA_FILE_ID_VAL" ] && REMAINING_FIELDS="${REMAINING_FIELDS}, Figma file ID"
+[ -z "$SUPABASE_REF" ]       && REMAINING_FIELDS="${REMAINING_FIELDS}, Supabase project ref"
+[ -z "$SENTRY_PROJECT_VAL" ] && REMAINING_FIELDS="${REMAINING_FIELDS}, Sentry project"
+
+REPLACEMENT="${FILLED_LINES}<!-- Fill in: ${REMAINING_FIELDS} -->"
+sed -i '' \
+  "s|<!-- Fill in: API base URL, Supabase project ref, Sentry project, Figma file ID -->|${REPLACEMENT}|" \
+  "$APP_ROOT/CLAUDE.md"
+
+[ -n "$FIGMA_FILE_ID_VAL" ] && echo "→ Patched CLAUDE.md with Figma file ID"
+[ -n "$SUPABASE_REF" ]       && echo "→ Patched CLAUDE.md with Supabase project ref"
+[ -n "$SENTRY_PROJECT_VAL" ] && echo "→ Patched CLAUDE.md with Sentry project"
 
 # ── Done ──────────────────────────────────────────────────────────────────────
 echo ""
 echo "✓ Done. Next steps:"
-if [ "$FIGMA_PATCHED" = true ]; then
-  echo "  1. Edit CLAUDE.md — fill in API base URL, Supabase ref, Sentry project"
-  echo "     (project name and Figma file ID already filled in)"
+if [ "$REMAINING_FIELDS" = "API base URL" ]; then
+  echo "  1. Edit CLAUDE.md — fill in: API base URL (only remaining field)"
 else
-  echo "  1. Edit CLAUDE.md — fill in API base URL, Supabase ref, Sentry project, Figma file ID"
-  echo "     (project name already filled in; run 'doppler setup' then re-run this script to auto-fill Figma file ID)"
+  echo "  1. Edit CLAUDE.md — fill in: ${REMAINING_FIELDS}"
+  echo "     (run 'doppler setup' then re-run this script to auto-fill more)"
 fi
 echo "  2. Review mcp.config.json — paths were auto-detected, adjust if needed"
 echo "  3. Start Claude: claude"
