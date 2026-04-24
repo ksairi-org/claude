@@ -27,10 +27,14 @@ jobs:
         with:
           node-version: 24
 
-      - name: Setup Yarn Berry
+      - name: Debug yarn environment
         run: |
-          npm install -g yarn@4.9.2
-          yarn --version
+          echo "PATH=$PATH"
+          echo "which yarn: $(which yarn)"
+          echo "yarn version: $(yarn --version 2>&1)"
+          echo "npm bin -g: $(npm bin -g 2>/dev/null || npm prefix -g)/bin"
+          echo "ls yarn in npm bin:"
+          ls "$(npm prefix -g)/bin/yarn" 2>/dev/null || echo "not found"
 
       - name: Install & build ${{ matrix.server }}
         working-directory: plugins/expo-rn-plugin/mcps/${{ matrix.server }}
