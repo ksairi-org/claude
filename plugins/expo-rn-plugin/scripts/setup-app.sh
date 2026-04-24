@@ -58,6 +58,50 @@ for cmd in "$PLUGIN_ROOT/templates/.claude/commands/"*; do
   [ -f "$cmd" ] && copy_if_missing "$cmd" "$APP_ROOT/.claude/commands/$(basename "$cmd")"
 done
 
+# ── 1b. Patch CLAUDE.md with project name ────────────────────────────────────
+echo "→ Patching CLAUDE.md..."
+APP_NAME=$(node -e "console.log(require('$PKG').name || 'My App')")
+if grep -q "^# Project Name$" "$APP_ROOT/CLAUDE.md"; then
+  sed -i '' "s/^# Project Name$/# ${APP_NAME}/" "$APP_ROOT/CLAUDE.md"
+  echo "   Set project name: ${APP_NAME}"
+else
+  echo "   Already patched"
+fi
+
+# ── 1c. Detect directory structure and patch mcp.config.json ─────────────────
+echo "→ Detecting project structure for mcp.config.json..."
+node -e "
+  const fs = require('fs');
+  const cfg = JSON.parse(fs.readFileSync('$APP_ROOT/mcp.config.json', 'utf8'));
+  const exists = (p) => fs.existsSync('$APP_ROOT/' + p);
+
+  // routesDir
+  if (exists('app')) cfg.routesDir = 'app';
+  else if (exists('src/app')) cfg.routesDir = 'src/app';
+
+  // components — prefer atomised layout, fall back to flat
+  const compBases = ['src/components', 'components'];
+  for (const base of compBases) {
+    if (exists(base)) {
+      for (const tier of ['atoms','molecules','organisms','screens']) {
+        cfg.components[tier] = exists(base + '/' + tier)
+          ? base + '/' + tier
+          : base;
+      }
+      break;
+    }
+  }
+
+  // orval generated SDK
+  if (exists('src/api/generated')) cfg.orval.sdkLib = 'src/api/generated';
+  else if (exists('src/generated')) cfg.orval.sdkLib = 'src/generated';
+
+  fs.writeFileSync('$APP_ROOT/mcp.config.json', JSON.stringify(cfg, null, 2) + '\n');
+  console.log('   routesDir  :', cfg.routesDir);
+  console.log('   components :', JSON.stringify(cfg.components));
+  console.log('   orval.sdkLib:', cfg.orval.sdkLib);
+"
+
 # ── 2. Link figma-tamagui-sync CLI ───────────────────────────────────────────
 SYNC_TOOL="$PLUGIN_ROOT/tools/figma-tamagui-sync"
 
@@ -70,32 +114,43 @@ cd "$APP_ROOT"
 # ── 3. package.json scripts ──────────────────────────────────────────────────
 echo "→ Patching package.json scripts..."
 
-if ! node -e "process.exit(require('./package.json').scripts['sync-design-tokens'] ? 0 : 1)" 2>/dev/null; then
-  node -e "
-    const fs = require('fs');
-    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+node -e "
+  const fs = require('fs');
+  const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+  let changed = false;
+
+  if (!pkg.scripts['sync-env-vars']) {
+    pkg.scripts['sync-env-vars'] =
+      'doppler secrets substitute env.template.yaml --output .env --config \$0';
+    console.log('   Added: sync-env-vars');
+    changed = true;
+  } else {
+    console.log('   Already present: sync-env-vars');
+  }
+
+  if (!pkg.scripts['sync-design-tokens']) {
     pkg.scripts['sync-design-tokens'] =
       'FIGMA_TOKEN=\$FIGMA_API_KEY figma-tamagui-sync --fileId=\$FIGMA_FILE_ID --out=./src/theme';
-    fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-  "
-  echo "   Added: sync-design-tokens"
-else
-  echo "   Already present: sync-design-tokens"
-fi
+    console.log('   Added: sync-design-tokens');
+    changed = true;
+  } else {
+    console.log('   Already present: sync-design-tokens');
+  }
 
-if node -e "process.exit(require('./package.json').scripts['pre-start'] ? 0 : 1)" 2>/dev/null; then
-  if ! node -e "process.exit(require('./package.json').scripts['pre-start'].includes('sync-design-tokens') ? 0 : 1)" 2>/dev/null; then
-    node -e "
-      const fs = require('fs');
-      const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-      pkg.scripts['pre-start'] = 'yarn sync-design-tokens; ' + pkg.scripts['pre-start'];
-      fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-    "
-    echo "   Patched: pre-start now runs sync-design-tokens first"
-  else
-    echo "   Already patched: pre-start"
-  fi
-fi
+  const preStart = pkg.scripts['pre-start'] || '';
+  const preamble = 'yarn sync-env-vars \$0; yarn sync-design-tokens; ';
+  if (preStart && !preStart.includes('sync-env-vars')) {
+    pkg.scripts['pre-start'] = preamble + preStart;
+    console.log('   Patched: pre-start runs sync-env-vars + sync-design-tokens first');
+    changed = true;
+  } else if (!preStart) {
+    console.log('   No pre-start script found — add sync-env-vars manually');
+  } else {
+    console.log('   Already patched: pre-start');
+  }
+
+  if (changed) fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+"
 
 # ── 4. env.template.yaml ─────────────────────────────────────────────────────
 if [ -f "$ENV_TEMPLATE" ]; then
@@ -129,12 +184,25 @@ else
   echo "→ .lsp.json already exists"
 fi
 
+# ── 6. Doppler project link ───────────────────────────────────────────────────
+echo ""
+if [ -f "$APP_ROOT/.doppler.yaml" ]; then
+  echo "→ Doppler already configured (.doppler.yaml exists)"
+else
+  echo "→ Doppler setup (links this directory to a Doppler project)"
+  echo "   Required secrets: FIGMA_API_KEY, FIGMA_FILE_ID, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY"
+  echo "   Press Enter to run 'doppler setup', or Ctrl-C to skip and do it later."
+  read -r
+  doppler setup
+fi
+
 # ── Done ──────────────────────────────────────────────────────────────────────
 echo ""
 echo "✓ Done. Next steps:"
-echo "  1. Edit CLAUDE.md — fill in project name and context"
-echo "  2. Edit mcp.config.json — adjust component paths for your project structure"
-echo "  3. Set secrets in Doppler, then: yarn sync-env-vars dev"
-echo "     Required: FIGMA_API_KEY, FIGMA_FILE_ID, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY"
-echo "  4. yarn add -D typescript-language-server  (if not already installed)"
-echo "  5. Start Claude: claude"
+echo "  1. Edit CLAUDE.md — fill in API base URL, Supabase ref, Sentry project, Figma file ID"
+echo "     (project name already filled in from package.json)"
+echo "  2. Review mcp.config.json — paths were auto-detected, adjust if needed"
+echo "  3. yarn add -D typescript-language-server  (if not already installed)"
+echo "  4. Start Claude: claude"
+echo ""
+echo "   Env vars sync automatically on every 'yarn start' via pre-start."
