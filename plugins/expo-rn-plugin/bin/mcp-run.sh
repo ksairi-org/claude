@@ -46,7 +46,7 @@ fi
 
 exec doppler run -p "$PROJECT" -c "$CONFIG" -- \
   sh -c '
-    export SUPABASE_URL="${SERVER_URL:-}" SENTRY_ACCESS_TOKEN="${SENTRY_AUTH_TOKEN:-}"
+    export SUPABASE_URL="${SUPABASE_URL:-${SERVER_URL:-}}" SENTRY_ACCESS_TOKEN="${SENTRY_AUTH_TOKEN:-}"
     args=()
     for arg in "$@"; do
       args+=("${arg/\$\{SENTRY_ORG\}/${SENTRY_ORG:-}}")

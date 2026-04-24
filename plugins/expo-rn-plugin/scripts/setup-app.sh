@@ -113,8 +113,16 @@ SYNC_TOOL="$PLUGIN_ROOT/tools/figma-tamagui-sync"
 
 echo "→ Installing figma-tamagui-sync CLI..."
 chmod +x "$SYNC_TOOL/bin/figma-tamagui-sync.js"
-ln -sf "$SYNC_TOOL/bin/figma-tamagui-sync.js" /usr/local/bin/figma-tamagui-sync
-echo "   Installed: $(which figma-tamagui-sync 2>/dev/null || echo 'not on PATH yet — restart shell')"
+LOCAL_BIN="$HOME/.local/bin"
+mkdir -p "$LOCAL_BIN"
+ln -sf "$SYNC_TOOL/bin/figma-tamagui-sync.js" "$LOCAL_BIN/figma-tamagui-sync"
+# Add ~/.local/bin to PATH in shell rc files if not already present
+for RC in "$HOME/.zshrc" "$HOME/.bashrc"; do
+  if [ -f "$RC" ] && ! grep -q '\.local/bin' "$RC"; then
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$RC"
+  fi
+done
+echo "   Installed: $(which figma-tamagui-sync 2>/dev/null || echo "$LOCAL_BIN/figma-tamagui-sync (restart shell to pick up)")"
 
 cd "$APP_ROOT"
 

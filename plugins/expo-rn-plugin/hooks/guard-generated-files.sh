@@ -2,7 +2,7 @@
 # Warns when Claude attempts to edit orval-generated files directly.
 set -euo pipefail
 
-TOOL_INPUT="${CLAUDE_TOOL_INPUT:-}"
+TOOL_INPUT=$(cat)
 if [[ -z "$TOOL_INPUT" ]]; then
   exit 0
 fi

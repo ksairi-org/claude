@@ -7,7 +7,7 @@ if ! command -v node >/dev/null 2>&1 || ! command -v yarn >/dev/null 2>&1; then
   exit 0
 fi
 
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT}"
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:?CLAUDE_PLUGIN_ROOT is not set}"
 
 build_server() {
   local src="$PLUGIN_ROOT/mcps/$1"

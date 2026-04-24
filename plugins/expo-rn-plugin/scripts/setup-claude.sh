@@ -15,28 +15,9 @@ ensure_yarn() {
     return 0
   fi
 
-  # corepack unavailable — ask the user
-  echo ""
-  echo "yarn is recommended over npm for projects using this plugin."
-  echo "corepack is not available (requires Node.js 16.9+)."
-  echo ""
-
-  # Skip prompt in non-interactive environments
-  if [ ! -t 0 ]; then
-    echo "Non-interactive shell detected — continuing with npm."
-    return 0
-  fi
-
-  read -r -p "Install yarn now via npm? [y/N] (or press Enter to continue with npm): " choice
-  case "$choice" in
-    [yY]*)
-      npm install -g yarn
-      echo "yarn installed."
-      ;;
-    *)
-      echo "Continuing with npm. You can install yarn later: https://yarnpkg.com/getting-started/install"
-      ;;
-  esac
+  # corepack unavailable — requires Node.js 16.9+ (plugin requires Node 18+)
+  echo "ERROR: corepack not found. Install Node.js 18+ to get corepack, then re-run."
+  exit 1
 }
 
 ensure_yarn

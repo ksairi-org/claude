@@ -69,6 +69,7 @@ Skills with a matching project command (e.g. `/form`) can also be invoked via th
 | `figma <url_or_node_id>` | `/figma` | Compare screen implementation against Figma design and fix discrepancies |
 | `sentry` | `/sentry` | Sentry error monitoring — setup, capture patterns, and MCP usage |
 | `stripe` | `/stripe` | Stripe payments — PaymentSheet flow, PCI rules, and MCP usage |
+| `preview` | `/preview` | Screenshot the running simulator, check device errors, and run tsc — use after every UI change |
 | `coding-standards` | — | Load project coding standards on demand (TypeScript, Tamagui, Zustand, Lingui) |
 | `analytics` | — | Load analytics standards — event naming, screen tracking, user identification, privacy rules (Firebase default; PostHog, Amplitude alternatives) |
 | `testing` | — | Write or fix component and hook tests using jest-expo and @testing-library/react-native |
@@ -86,6 +87,7 @@ These commands are copied to `.claude/commands/` by `setup-app.sh` and are avail
 | `/orval` | Regenerate OpenAPI hooks from the backend spec |
 | `/notifications` | Set up push notifications (expo-notifications + FCM) |
 | `/sync-tokens` | Pull latest design tokens from Figma mid-session |
+| `/preview [screen]` | Screenshot the running simulator and verify the UI visually |
 
 ### Agents (available in `/agents`)
 
@@ -211,7 +213,7 @@ This keeps session startup context small and only loads standards when needed.
 
 ### First-time setup (contributors)
 
-Install the git pre-push hook from the repo root — it rebuilds `dist/` automatically before every push:
+Install Claude Code plugins (compound-engineering, expo, github) from the repo root:
 
 ```bash
 bash scripts/setup-claude.sh

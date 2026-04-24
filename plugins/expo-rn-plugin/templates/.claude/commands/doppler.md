@@ -20,7 +20,7 @@ To add a new secret (`$ARGUMENTS`):
 
 3. Sync to local `.env`:
    ```bash
-   yarn sync-env-vars stg
+   yarn sync-env-vars
    ```
 
 Use `EXPO_PUBLIC_` prefix for vars accessed in client-side code.

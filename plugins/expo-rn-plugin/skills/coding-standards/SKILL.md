@@ -80,7 +80,7 @@ const store = useUserStore();
 - Adding a new secret requires three steps:
   1. Add to `env.template.yaml`: `VAR_NAME={{ .VAR_NAME }}`
   2. Set in all configs: `doppler secrets set VAR_NAME="value" --project <p> --config dev/stg/prod`
-  3. Sync: `yarn sync-env-vars stg`
+  3. Sync: `yarn sync-env-vars`
 - `EXPO_PUBLIC_` prefix required for client-side vars
 
 ## HTTP / API
