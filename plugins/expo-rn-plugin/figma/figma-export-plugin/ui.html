@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Inter, -apple-system, sans-serif;
+      font-size: 13px;
+      background: #1e1e1e;
+      color: #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      padding: 16px;
+      gap: 12px;
+    }
+    h2 { font-size: 14px; font-weight: 600; color: #fff; }
+    p { color: #999; font-size: 12px; line-height: 1.5; }
+    textarea {
+      flex: 1;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: #d4f5c4;
+      font-family: "SF Mono", Menlo, monospace;
+      font-size: 11px;
+      padding: 10px;
+      resize: none;
+      outline: none;
+    }
+    .actions { display: flex; gap: 8px; }
+    button {
+      flex: 1;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    #copyBtn { background: #18a0fb; color: #fff; }
+    #copyBtn:hover { background: #0d8de3; }
+    #copyBtn.copied { background: #1bc47d; }
+    #closeBtn { background: #333; color: #ccc; }
+    #closeBtn:hover { background: #444; }
+  </style>
+</head>
+<body>
+  <h2>Export Design Tokens</h2>
+  <p>Copy the JSON below and commit it to <code>tokens/figma-variables.json</code> in the app repo.</p>
+  <textarea id="output" readonly>Loading…</textarea>
+  <div class="actions">
+    <button id="copyBtn">Copy JSON</button>
+    <button id="closeBtn">Close</button>
+  </div>
+
+  <script>
+    window.onmessage = function(event) {
+      if (event.data.pluginMessage && event.data.pluginMessage.type === "tokens") {
+        document.getElementById("output").value = event.data.pluginMessage.data;
+      }
+    };
+
+    document.getElementById("copyBtn").addEventListener("click", function() {
+      const ta = document.getElementById("output");
+      ta.select();
+      document.execCommand("copy");
+      const btn = document.getElementById("copyBtn");
+      btn.textContent = "Copied!";
+      btn.classList.add("copied");
+      setTimeout(function() {
+        btn.textContent = "Copy JSON";
+        btn.classList.remove("copied");
+      }, 2000);
+    });
+
+    document.getElementById("closeBtn").addEventListener("click", function() {
+      parent.postMessage({ pluginMessage: { type: "close" } }, "*");
+    });
+  </script>
+</body>
+</html>

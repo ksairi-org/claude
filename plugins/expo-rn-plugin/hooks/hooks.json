@@ -9,7 +9,7 @@
           },
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/sync-figma-tokens.sh\""
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/figma/sync-figma-tokens.sh\""
           }
         ]
       }

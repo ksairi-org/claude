@@ -96,7 +96,7 @@ All servers that require secrets are wrapped via Doppler (`bin/mcp-run.sh`).
 | Event | Hook | Effect |
 | --- | --- | --- |
 | `SessionStart` | `build-mcp-servers.sh` | Builds MCP servers if outdated (first run or plugin update) |
-| `SessionStart` | `sync-figma-tokens.sh` | Syncs Tamagui design tokens from Figma if `FIGMA_FILE_ID` + `FIGMA_API_KEY` are set (no-op otherwise) |
+| `SessionStart` | `figma/sync-figma-tokens.sh` | Syncs Tamagui design tokens from Figma if `FIGMA_FILE_ID` + `FIGMA_API_KEY` are set (no-op otherwise) |
 | `PreToolUse` (Write/Edit) | `guard-generated-files.sh` | Blocks edits to auto-generated files (`src/api/generated/`, `src/theme/`) — run the generator instead |
 | `PostToolUse` (Write/Edit) | `tsc-check.sh` | Runs `tsc --noEmit` after file edits in TypeScript projects |
 | `Stop` | `context-warning.sh` | Warns when context window ≥ 70% — prompts for `/compact` |
