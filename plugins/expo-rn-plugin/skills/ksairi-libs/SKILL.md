@@ -1,104 +1,40 @@
 ---
 name: ksairi-libs
-description: Full reference for all @ksairi-org/* libraries. Load when deciding which utility, hook, component, or function to use — prefer these over standard alternatives wherever they exist. Source at https://github.com/ksairi-org/ksairi-libs; use the GitHub MCP to read source for deeper detail.
+description: Load the live @ksairi-org/* library reference from GitHub. Use before writing any hook, utility, component, or layout code — these packages replace many standard alternatives. Always fetches current state so new packages and API changes are reflected.
 ---
 
-Always prefer `@ksairi-org/*` packages over third-party or hand-rolled equivalents when one exists.
+The `@ksairi-org/*` libraries live at `https://github.com/ksairi-org/ksairi-libs`.
 
-## Auth — `@ksairi-org/react-auth-*`
+**Before writing any hook, utility, component, or layout code**, fetch the current package list and read the relevant source using the GitHub MCP:
 
-Never use raw Supabase auth calls. Always use this family:
+## Step 1 — Discover available packages
 
-| Package | Export | Purpose |
-| --- | --- | --- |
-| `react-auth-setup` | `AuthProvider` | Root provider — wrap `app/_layout.tsx` |
-| `react-auth-hooks` | `useAuth()`, `useAuthStore()` | Auth state — isAuthenticated, user, session |
-| `react-auth-core` | (internal) | Token lifecycle and refresh — never implement custom refresh |
-| `react-auth-client` | (internal) | Supabase adapter |
-| `react-auth-storage` | (internal) | expo-secure-store adapter — tokens never touch MMKV/AsyncStorage |
-| `react-native-auth-google` | Google Sign-In adapter | Pass id token to auth core |
-| `react-native-auth-apple` | Apple Sign-In adapter | Requires physical device |
+```text
+mcp__github__get_file_contents(owner="ksairi-org", repo="ksairi-libs", path="packages")
+```
 
-## Forms — `@ksairi-org/react-form`
+This returns the current list of packages. Do not assume you know what's there — packages are added over time.
 
-Exports `Form` — field wrappers and error display for RHF + Tamagui.
-Use `Form` components before falling back to raw Tamagui `Input` + `Label`.
+## Step 2 — Read the package you need
 
-## UI — `@ksairi-org/ui-containers`
+For each relevant package, read its `index.ts` (at the package root, not in `src/`):
 
-Exports `Containers` object — use these for all screen and sub-layout wrappers:
+```text
+mcp__github__get_file_contents(owner="ksairi-org", repo="ksairi-libs", path="packages/<name>/index.ts")
+```
 
-| Name | Use |
-| --- | --- |
-| `Containers.Screen` | Main screen wrapper (replaces `SafeAreaView` + `ScrollView` boilerplate) |
-| `Containers.ScreenXGlassContainer` | Horizontal glass-effect screen |
-| `Containers.ScreenYGlassContainer` | Vertical glass-effect screen |
-| `Containers.SubX` | Horizontal sub-section container |
-| `Containers.SubY` | Vertical sub-section container |
-| `Containers.SubGlassX` / `SubGlassY` | Glass-effect sub-containers |
+If the package has subdirectories (e.g. `animations/`, `scaling/`), list the directory first then read the files you need.
 
-## UI — `@ksairi-org/ui-touchables`
+## Step 3 — Apply
 
-Exports `BaseTouchable` — use instead of `Pressable` or `TouchableOpacity`.
+Prefer `@ksairi-org/*` over any third-party or hand-rolled alternative when one exists. Import from the published npm package name (e.g. `@ksairi-org/react-hooks`), not from the GitHub path.
 
-## UI — `@ksairi-org/expo-image`
+## Standing rules (always apply regardless of what you find)
 
-Wrapper around `expo-image` with project defaults. Use instead of raw `expo-image`.
-
-## Hooks — `@ksairi-org/react-hooks` (generic React)
-
-| Hook | Purpose |
-| --- | --- |
-| `useBooleanState` | Toggle boolean — returns `[value, setTrue, setFalse, toggle]` |
-| `useIsMounted` | Guard async callbacks after unmount |
-| `usePrevious` | Previous render value |
-| `useHasValueChanged` | Detect any value change |
-| `useHasValueBecomeTruthy` | Detect false → true transition |
-| `useHasValueBecomeFalsy` | Detect true → false transition |
-| `useRunFunctionOnChange` | Run callback when a value changes |
-
-## Hooks — `@ksairi-org/react-native-hooks` (RN-specific)
-
-| Hook | Purpose |
-| --- | --- |
-| `useAppState` | Current app state (active / background / inactive) |
-| `useAutoHitSlop` | Auto-compute hit slop from element layout |
-| `useDisableBackHandlerOnFocus` | Block Android back button on focused screen |
-| `useFontScale` | Current system font scale |
-| `useIsKeyboardShown` | Boolean — keyboard visible |
-| `useKeyboardOffsetHeight` | Keyboard height for manual offset adjustments |
-| `useLayoutAnimationOnChange` | Trigger `LayoutAnimation` on any value change |
-| `useLayoutAnimationOnTruthy` | Trigger `LayoutAnimation` when value becomes truthy |
-| `useLayoutAnimationOnFalsy` | Trigger `LayoutAnimation` when value becomes falsy |
-| `useSetupNetworkConnectionChange` | Subscribe to network connectivity events |
-
-## Functions — `@ksairi-org/react-native-functions`
-
-- **`animations/`** — animation presets and helpers
-- **`scaling/getImageDimensions`** — compute image dimensions preserving aspect ratio
-- **`scaling/scaleBasedOnScreenDimension`** — scale a value relative to screen size
-
-## Functions — `@ksairi-org/typescript-functions`
-
-Type-safe wrappers for common JS operations — always use these instead of raw:
-
-| Function | Replaces |
-| --- | --- |
-| `isDefined(value)` | `value !== null && value !== undefined` — use as array filter |
-| `typedKeys(obj)` | `Object.keys(obj) as (keyof T)[]` |
-| `typedEntries(obj)` | `Object.entries(obj) as [keyof T, T[keyof T]][]` |
-| `typedValues(obj)` | `Object.values(obj) as T[keyof T][]` |
-
-## UI Config — `@ksairi-org/react-native-ui-config`
-
-- **`useColorTokenValue(token)`** — resolve a Tamagui color token string to its current theme rgba value (use when you need a raw color string, e.g. for `StatusBar` or native APIs)
-- **`createFontObject(config)`** — create a Tamagui-compatible font config object
-
-## Splash — `@ksairi-org/react-native-splash-view`
-
-Exports `SplashView` — animated splash screen with logo, replaces `expo-splash-screen` direct usage.
-
-## SDK — `@ksairi-org/react-query-sdk`
-
-Orval config and custom axios instance used as the base for generating per-project API hooks.
-Never import from this package directly in app code — use the generated hooks in `src/api/generated/`.
+- **Auth** — never use raw Supabase auth. Always use `@ksairi-org/react-auth-*`.
+- **Touchables** — never use `Pressable` or `TouchableOpacity`. Use `@ksairi-org/ui-touchables`.
+- **Images** — never use raw `expo-image`. Use `@ksairi-org/expo-image`.
+- **Forms** — prefer `@ksairi-org/react-form` field components. Fall back to Tamagui `Input` + `Label` only if a primitive is missing.
+- **Screen layout** — use `@ksairi-org/ui-containers` (`Containers.Screen`, `Containers.SubX/Y`, etc.) instead of raw `SafeAreaView` boilerplate.
+- **TypeScript utils** — use `@ksairi-org/typescript-functions` (`isDefined`, `typedKeys`, `typedEntries`, `typedValues`) instead of inline equivalents.
+- **API hooks** — never import from `@ksairi-org/react-query-sdk` directly in app code. Use the orval-generated hooks in `src/api/generated/`.
