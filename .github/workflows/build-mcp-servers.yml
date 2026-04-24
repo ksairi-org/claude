@@ -28,7 +28,7 @@ jobs:
           node-version: 24
 
       - name: Enable Corepack
-        run: corepack enable
+        run: corepack enable && corepack prepare yarn@4.9.2 --activate
 
       - name: Install & build ${{ matrix.server }}
         working-directory: plugins/expo-rn-plugin/mcps/${{ matrix.server }}
