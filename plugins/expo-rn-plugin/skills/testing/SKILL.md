@@ -63,7 +63,7 @@ it("returns wallet balance", async () => {
 
 ```ts
 jest.mock("src/api/generated", () => ({
-  useGetWallets: () => ({ data: [{ id: "1", balance: 100 }], isLoading: false }),
+  useGetItems: () => ({ data: [{ id: "1" }], isLoading: false }),
 }));
 ```
 

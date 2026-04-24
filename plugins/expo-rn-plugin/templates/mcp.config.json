@@ -12,7 +12,7 @@
   "router": "expo-router",
   "routesDir": "src/app",
   "orval": {
-    "sdkLib": "libs/react-query-sdk"
+    "sdkLib": "src/api/generated"
   },
   "i18n": {
     "localesDir": "src/i18n/locales",

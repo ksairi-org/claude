@@ -41,16 +41,5 @@
     ],
     "deny": []
   },
-  "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/context-warning.sh 2>/dev/null || true"
-          }
-        ]
-      }
-    ]
-  }
+  "hooks": {}
 }
