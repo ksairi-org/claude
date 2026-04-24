@@ -23,18 +23,14 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
 
-      - name: Debug yarn environment
+      - name: Setup Yarn Berry
         run: |
-          echo "PATH=$PATH"
-          echo "which yarn: $(which yarn)"
-          echo "yarn version: $(yarn --version 2>&1)"
-          echo "npm bin -g: $(npm bin -g 2>/dev/null || npm prefix -g)/bin"
-          echo "ls yarn in npm bin:"
-          ls "$(npm prefix -g)/bin/yarn" 2>/dev/null || echo "not found"
+          corepack enable
+          corepack prepare yarn@4.9.2 --activate
 
       - name: Install & build ${{ matrix.server }}
         working-directory: plugins/expo-rn-plugin/mcps/${{ matrix.server }}
