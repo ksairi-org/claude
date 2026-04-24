@@ -161,10 +161,31 @@ if [ -f "$ENV_TEMPLATE" ]; then
     echo "→ FIGMA_FILE_ID already in env.template.yaml"
   fi
 else
-  echo "→ No env.template.yaml found — skipping (add FIGMA_FILE_ID to your env config manually)"
+  echo "→ Scaffolding env.template.yaml..."
+  cat > "$ENV_TEMPLATE" <<'YAML'
+FIGMA_API_KEY={{ .FIGMA_API_KEY }}
+FIGMA_FILE_ID={{ .FIGMA_FILE_ID }}
+SUPABASE_URL={{ .SUPABASE_URL }}
+SUPABASE_SERVICE_ROLE_KEY={{ .SUPABASE_SERVICE_ROLE_KEY }}
+YAML
+  echo "   Created: env.template.yaml"
 fi
 
-# ── 5. LSP ───────────────────────────────────────────────────────────────────
+# ── 5. .gitignore ─────────────────────────────────────────────────────────────
+GITIGNORE="$APP_ROOT/.gitignore"
+if [ -f "$GITIGNORE" ]; then
+  if ! grep -qx "\.env" "$GITIGNORE"; then
+    echo ".env" >> "$GITIGNORE"
+    echo "→ Added .env to .gitignore"
+  else
+    echo "→ .env already in .gitignore"
+  fi
+else
+  echo ".env" > "$GITIGNORE"
+  echo "→ Created .gitignore with .env"
+fi
+
+# ── 6. LSP ───────────────────────────────────────────────────────────────────
 LSP_FILE="$APP_ROOT/.lsp.json"
 if [ ! -f "$LSP_FILE" ]; then
   echo "→ Creating .lsp.json..."
@@ -179,12 +200,13 @@ if [ ! -f "$LSP_FILE" ]; then
 }
 JSON
   echo "   Created: .lsp.json"
-  echo "   Run: yarn add -D typescript-language-server"
-else
-  echo "→ .lsp.json already exists"
 fi
 
-# ── 6. Doppler project link ───────────────────────────────────────────────────
+echo "→ Installing typescript-language-server..."
+yarn add -D typescript-language-server --silent
+echo "   Done"
+
+# ── 7. Doppler project link ───────────────────────────────────────────────────
 echo ""
 if [ -f "$APP_ROOT/.doppler.yaml" ]; then
   echo "→ Doppler already configured (.doppler.yaml exists)"
@@ -196,13 +218,21 @@ else
   doppler setup
 fi
 
+# ── 8. Patch CLAUDE.md with Figma file ID from Doppler ───────────────────────
+FIGMA_FILE_ID_VAL=$(doppler secrets get FIGMA_FILE_ID --plain 2>/dev/null || true)
+if [ -n "$FIGMA_FILE_ID_VAL" ]; then
+  sed -i '' \
+    "s|<!-- Fill in: API base URL, Supabase project ref, Sentry project, Figma file ID -->|- Figma file ID: ${FIGMA_FILE_ID_VAL}\n<!-- Fill in: API base URL, Supabase project ref, Sentry project -->|" \
+    "$APP_ROOT/CLAUDE.md"
+  echo "→ Patched CLAUDE.md with Figma file ID from Doppler"
+fi
+
 # ── Done ──────────────────────────────────────────────────────────────────────
 echo ""
 echo "✓ Done. Next steps:"
-echo "  1. Edit CLAUDE.md — fill in API base URL, Supabase ref, Sentry project, Figma file ID"
-echo "     (project name already filled in from package.json)"
+echo "  1. Edit CLAUDE.md — fill in API base URL, Supabase ref, Sentry project"
+echo "     (project name and Figma file ID already filled in)"
 echo "  2. Review mcp.config.json — paths were auto-detected, adjust if needed"
-echo "  3. yarn add -D typescript-language-server  (if not already installed)"
-echo "  4. Start Claude: claude"
+echo "  3. Start Claude: claude"
 echo ""
 echo "   Env vars sync automatically on every 'yarn start' via pre-start."
