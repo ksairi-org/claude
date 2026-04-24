@@ -34,6 +34,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup-app.sh"
 | `coding-standards` | Load project coding standards on demand (TypeScript, Tamagui, Zustand, Lingui) |
 | `analytics` | Load analytics standards — event naming, screen tracking, user identification, privacy rules (Firebase default; PostHog, Amplitude alternatives) |
 | `testing` | Write or fix component and hook tests using jest-expo and @testing-library/react-native |
+| `ksairi-libs` | Full reference for all `@ksairi-org/*` libraries — hooks, containers, auth, form, functions, UI config. Load before writing any utility, hook, or layout code. |
 
 ### Agents (available in `/agents`)
 
