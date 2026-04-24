@@ -6,6 +6,7 @@ set -euo pipefail
 APP_ROOT="${1:-$PWD}"
 PKG="$APP_ROOT/package.json"
 ENV_TEMPLATE="$APP_ROOT/env.template.yaml"
+PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 if [ ! -f "$PKG" ]; then
   echo "Error: no package.json found in $APP_ROOT"
@@ -33,20 +34,42 @@ ensure_brew_pkg() {
 ensure_brew_pkg jq
 ensure_brew_pkg doppler dopplerhq/cli
 
-# ── 1. Link figma-tamagui-sync CLI ───────────────────────────────────────────
-PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# ── 1. Copy templates (skip files that already exist) ────────────────────────
+echo "→ Copying templates..."
+
+copy_if_missing() {
+  local src="$1" dst="$2"
+  if [ -e "$dst" ]; then
+    echo "   Skipped (exists): $dst"
+  else
+    mkdir -p "$(dirname "$dst")"
+    cp "$src" "$dst"
+    echo "   Copied: $dst"
+  fi
+}
+
+copy_if_missing "$PLUGIN_ROOT/templates/.mcp.json"                        "$APP_ROOT/.mcp.json"
+copy_if_missing "$PLUGIN_ROOT/templates/CLAUDE.md"                        "$APP_ROOT/CLAUDE.md"
+copy_if_missing "$PLUGIN_ROOT/templates/mcp.config.json"                  "$APP_ROOT/mcp.config.json"
+copy_if_missing "$PLUGIN_ROOT/templates/.claude/settings.json"            "$APP_ROOT/.claude/settings.json"
+
+# Copy commands (each individually so existing ones are preserved)
+for cmd in "$PLUGIN_ROOT/templates/.claude/commands/"*; do
+  [ -f "$cmd" ] && copy_if_missing "$cmd" "$APP_ROOT/.claude/commands/$(basename "$cmd")"
+done
+
+# ── 2. Link figma-tamagui-sync CLI ───────────────────────────────────────────
 SYNC_TOOL="$PLUGIN_ROOT/tools/figma-tamagui-sync"
 
 echo "→ Linking figma-tamagui-sync CLI..."
 (cd "$SYNC_TOOL" && yarn link --silent)
-echo "   Linked: $(which figma-tamagui-sync)"
+echo "   Linked: $(which figma-tamagui-sync 2>/dev/null || echo 'not on PATH yet — restart shell')"
 
 cd "$APP_ROOT"
 
-# ── 2. package.json scripts ──────────────────────────────────────────────────
+# ── 3. package.json scripts ──────────────────────────────────────────────────
 echo "→ Patching package.json scripts..."
 
-# Inject sync-design-tokens script if not already present
 if ! node -e "process.exit(require('./package.json').scripts['sync-design-tokens'] ? 0 : 1)" 2>/dev/null; then
   node -e "
     const fs = require('fs');
@@ -60,7 +83,6 @@ else
   echo "   Already present: sync-design-tokens"
 fi
 
-# Prepend yarn sync-design-tokens to pre-start if not already there
 if node -e "process.exit(require('./package.json').scripts['pre-start'] ? 0 : 1)" 2>/dev/null; then
   if ! node -e "process.exit(require('./package.json').scripts['pre-start'].includes('sync-design-tokens') ? 0 : 1)" 2>/dev/null; then
     node -e "
@@ -75,7 +97,7 @@ if node -e "process.exit(require('./package.json').scripts['pre-start'] ? 0 : 1)
   fi
 fi
 
-# ── 3. env.template.yaml ─────────────────────────────────────────────────────
+# ── 4. env.template.yaml ─────────────────────────────────────────────────────
 if [ -f "$ENV_TEMPLATE" ]; then
   if ! grep -q "FIGMA_FILE_ID" "$ENV_TEMPLATE"; then
     echo "→ Adding FIGMA_FILE_ID to env.template.yaml..."
@@ -87,10 +109,32 @@ else
   echo "→ No env.template.yaml found — skipping (add FIGMA_FILE_ID to your env config manually)"
 fi
 
+# ── 5. LSP ───────────────────────────────────────────────────────────────────
+LSP_FILE="$APP_ROOT/.lsp.json"
+if [ ! -f "$LSP_FILE" ]; then
+  echo "→ Creating .lsp.json..."
+  cat > "$LSP_FILE" <<'JSON'
+{
+  "languages": [
+    {
+      "language": "typescript",
+      "command": ["./node_modules/.bin/typescript-language-server", "--stdio"]
+    }
+  ]
+}
+JSON
+  echo "   Created: .lsp.json"
+  echo "   Run: yarn add -D typescript-language-server"
+else
+  echo "→ .lsp.json already exists"
+fi
+
 # ── Done ──────────────────────────────────────────────────────────────────────
 echo ""
-echo "Done. Next steps:"
-echo "  1. Set FIGMA_FILE_ID in Doppler (get it from your Figma file URL):"
-echo "     doppler secrets set FIGMA_FILE_ID=\"<id>\" --project <project> --config dev"
-echo "  2. Sync env: yarn sync-env-vars dev"
-echo "  3. Run yarn sync-design-tokens to generate src/theme/ token files."
+echo "✓ Done. Next steps:"
+echo "  1. Edit CLAUDE.md — fill in project name and context"
+echo "  2. Edit mcp.config.json — adjust component paths for your project structure"
+echo "  3. Set secrets in Doppler, then: yarn sync-env-vars dev"
+echo "     Required: FIGMA_API_KEY, FIGMA_FILE_ID, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY"
+echo "  4. yarn add -D typescript-language-server  (if not already installed)"
+echo "  5. Start Claude: claude"

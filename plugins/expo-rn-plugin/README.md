@@ -1,12 +1,41 @@
 # expo-rn-plugin
 
-Claude Code plugin for React Native / Expo projects. Provides MCP servers, scaffolding skills, Figma sync, i18n review, token optimization, and TypeScript code intelligence — all in one installable plugin. Supports Supabase, Firebase, and REST backends.
+Claude Code plugin for React Native / Expo projects. Provides MCP servers, scaffolding skills, Figma sync, i18n review, and TypeScript code intelligence — all in one installable plugin. Supports Supabase, Firebase, and REST backends.
 
 ## Requirements
 
 macOS or Linux. Windows users must run inside [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) — the plugin scripts require bash and Homebrew (via Linuxbrew in WSL2).
 
-## Install
+## New app quickstart
+
+```bash
+# 1. Create your Expo app (if starting fresh)
+yarn create expo-app my-app && cd my-app
+
+# 2. Install the plugin
+claude plugin install expo-rn-plugin --scope project
+# → You'll be prompted for your Doppler project name and config (dev/stg/prod)
+
+# 3. Run one-time setup from your app root
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup-app.sh"
+# → Copies templates (.mcp.json, CLAUDE.md, mcp.config.json, .claude/)
+# → Links figma-tamagui-sync CLI
+# → Adds sync-design-tokens script to package.json
+# → Creates .lsp.json for TypeScript LSP
+
+# 4. Finish manually
+#    a) Edit CLAUDE.md — fill in project name and context placeholders
+#    b) Edit mcp.config.json — adjust component paths for your structure
+#    c) Set secrets in Doppler, then sync:
+yarn sync-env-vars dev
+#    d) Add LSP devDep:
+yarn add -D typescript-language-server
+
+# 5. Start Claude
+claude
+```
+
+## Install (existing project)
 
 ```bash
 claude plugin install expo-rn-plugin --scope project
@@ -16,7 +45,7 @@ claude plugin install expo-rn-plugin --scope project
 
 MCP servers ship with pre-built `dist/` — no build step required after install.
 
-After installing the plugin, run the app setup script once from your app root to wire in Figma token sync, devDependencies, and env template entries:
+Run setup once from your app root:
 
 ```bash
 bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup-app.sh"
@@ -34,7 +63,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup-app.sh"
 | `coding-standards` | Load project coding standards on demand (TypeScript, Tamagui, Zustand, Lingui) |
 | `analytics` | Load analytics standards — event naming, screen tracking, user identification, privacy rules (Firebase default; PostHog, Amplitude alternatives) |
 | `testing` | Write or fix component and hook tests using jest-expo and @testing-library/react-native |
-| `ksairi-libs` | Full reference for all `@ksairi-org/*` libraries — hooks, containers, auth, form, functions, UI config. Load before writing any utility, hook, or layout code. |
+| `ksairi-libs` | *(optional)* Full reference for `@ksairi-org/*` libraries fetched live from GitHub. Load before writing any utility, hook, or layout code if your project uses these packages. |
 
 ### Agents (available in `/agents`)
 
