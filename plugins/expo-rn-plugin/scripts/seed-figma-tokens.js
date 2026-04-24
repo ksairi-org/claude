@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Seeds a Figma file with design tokens from virtual-wallet as Figma Variables.
+ * Seeds a Figma file with design tokens as Figma Variables.
  *
  * Usage:
  *   FIGMA_FILE_ID=<fileKey> FIGMA_API_KEY=<token> node seed-figma-tokens.js

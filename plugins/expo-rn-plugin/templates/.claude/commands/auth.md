@@ -1,22 +1,21 @@
 ---
 name: auth
-description: Set up or debug social auth flows (Google, Apple, email) using @ksairi-org/react-auth-* packages
+description: Set up or debug social auth flows (Google, Apple, email) using Supabase auth
 argument-hint: "<google|apple|email|all>"
 ---
 
-Wire up authentication for `$ARGUMENTS` using the project's auth library family.
+Wire up authentication for `$ARGUMENTS` using Supabase auth.
+
+> If the project uses a custom auth library, check `CLAUDE.md` for the package names before writing any imports.
 
 ## Package responsibilities
 
 | Package | Role |
 | --- | --- |
-| `@ksairi-org/react-auth-core` | Auth state machine, token lifecycle |
-| `@ksairi-org/react-auth-client` | Supabase auth client adapter |
-| `@ksairi-org/react-auth-hooks` | `useAuth`, `useAuthStore` hooks |
-| `@ksairi-org/react-auth-storage` | Secure token storage (expo-secure-store) |
-| `@ksairi-org/react-auth-setup` | Root provider wiring |
-| `@ksairi-org/react-native-auth-google` | Google Sign-In adapter |
-| `@ksairi-org/react-native-auth-apple` | Apple Sign-In adapter |
+| `@supabase/supabase-js` | Auth client, session management, token refresh |
+| `@react-native-google-signin/google-signin` | Google Sign-In adapter |
+| `expo-apple-authentication` | Apple Sign-In |
+| `expo-secure-store` | Secure session storage adapter for Supabase client |
 
 ## Required Doppler vars
 
@@ -25,19 +24,21 @@ Wire up authentication for `$ARGUMENTS` using the project's auth library family.
 
 ## Setup steps
 
-1. **Wrap root** — add `AuthProvider` from `@ksairi-org/react-auth-setup` in `app/_layout.tsx`
+1. **Configure Supabase client** — pass `expo-secure-store` adapter as the storage option in `createClient`
 
-2. **Google** — configure `GoogleSignin.configure({ webClientId, iosClientId })` on app start; use `@ksairi-org/react-native-auth-google`
+2. **Wrap root** — subscribe to `supabase.auth.onAuthStateChange` in root layout; expose session via context or Zustand
 
-3. **Apple** — use `@ksairi-org/react-native-auth-apple`; Apple requires a real device for testing
+3. **Google** — call `GoogleSignin.configure({ webClientId, iosClientId })` on app start; pass the id token to `supabase.auth.signInWithIdToken`
 
-4. **Access auth state** — always via `useAuth()` or `useAuthStore((s) => s.user)` — never read tokens directly
+4. **Apple** — use `expo-apple-authentication`; pass the identity token to `supabase.auth.signInWithIdToken`
 
-5. **Protected routes** — check `useAuth().isAuthenticated` in the root layout and redirect to `/login` via `expo-router`
+5. **Access auth state** — always via your auth context or store — never read tokens directly from storage
+
+6. **Protected routes** — check `isAuthenticated` in the root layout and redirect to `/login` via `expo-router`
 
 ## Rules
 
-- Tokens are stored in `expo-secure-store` via `@ksairi-org/react-auth-storage` — never in MMKV or AsyncStorage
+- Sessions stored via `expo-secure-store` adapter — never raw MMKV or AsyncStorage
 - Never expose tokens in logs, Sentry breadcrumbs, or network request bodies
-- Refresh logic is handled by `react-auth-core` — do not implement custom refresh logic
-- For sign-out: call the auth library's `signOut()` — do not manually clear stores or storage
+- Token refresh is handled by the Supabase client automatically — do not implement custom refresh logic
+- For sign-out: call `supabase.auth.signOut()` — do not manually clear stores or storage

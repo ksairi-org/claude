@@ -6,8 +6,8 @@
 - Raw hex/rgba in Tamagui props — use `$token` references only
 - `StyleSheet.create()` — use Tamagui `styled()`
 - `FlatList` — use `FlashList` with `estimatedItemSize`
-- `TouchableOpacity` / `Pressable` — use `@ksairi-org/ui-touchables`
-- Raw `expo-image` — use `@ksairi-org/expo-image`
+- `TouchableOpacity` / `Pressable` — use your team's touchable wrapper
+- Raw `expo-image` — use your team's image wrapper (if any)
 - `KeyboardAvoidingView` — use `react-native-keyboard-controller`
 - `Alert.alert` for non-destructive feedback — use `burnt.toast()`
 - `npm` / `npx` / `pnpm` — always `yarn`
@@ -29,8 +29,8 @@
 Run `/expo-rn-plugin:coding-standards` to load full standards. Quick pointers:
 
 - **State:** server state → react-query hooks; UI state → Zustand + MMKV
-- **Forms:** RHF + zod + `@ksairi-org/react-form` — `/expo-rn-plugin:form`
-- **Auth:** `@ksairi-org/react-auth-*` + Google/Apple
+- **Forms:** RHF + zod + Tamagui fields — `/expo-rn-plugin:form`
+- **Auth:** Supabase auth + Google/Apple — `/expo-rn-plugin:auth`
 - **Payments:** Stripe `PaymentSheet`
 - **Errors:** Sentry
 - **API hooks:** orval-generated hooks in `src/api/generated/`

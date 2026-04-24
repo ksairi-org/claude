@@ -8,7 +8,7 @@ Generate a validated form for `$ARGUMENTS` using the project's form stack.
 
 ## Stack
 
-- `@ksairi-org/react-form` — project form primitives (field wrappers, error display)
+- Project form primitives — field wrappers, error display (check `get_components` for what's available)
 - `react-hook-form` — form state and submission
 - `@hookform/resolvers/zod` — zod resolver bridge
 - `zod` — schema and validation rules
@@ -20,7 +20,7 @@ Generate a validated form for `$ARGUMENTS` using the project's form stack.
 
 2. **Wire the form** — use `useForm<FormType>` with `zodResolver(schema)` and sensible `defaultValues`
 
-3. **Render fields** — use field components from `@ksairi-org/react-form`; fall back to Tamagui `Input` + `Label` only if a primitive is missing
+3. **Render fields** — use project form field components; fall back to Tamagui `Input` + `Label` only if a primitive is missing
 
 4. **Handle submission** — `handleSubmit(onSubmit)` where `onSubmit` receives the fully-typed, validated payload
 

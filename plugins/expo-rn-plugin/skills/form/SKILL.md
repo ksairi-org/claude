@@ -8,13 +8,13 @@ Generate a validated form for `$ARGUMENTS`.
 
 ## Steps
 
-1. **Check existing components** — call `get_components` and look for existing form field primitives from `@ksairi-org/react-form` before creating new ones
+1. **Check existing components** — call `get_components` and look for existing form field primitives before creating new ones
 
 2. **Define the zod schema** — write a `z.object()` schema in a dedicated `<feature>.schema.ts` file; derive the TypeScript type with `z.infer`
 
 3. **Wire the form** — use `useForm<FormValues>` with `zodResolver(schema)` and explicit `defaultValues` for every field
 
-4. **Render with Controller** — always use `Controller` (never `register`) for React Native compatibility; use field components from `@ksairi-org/react-form` or Tamagui `Input` + `Label` as fallback
+4. **Render with Controller** — always use `Controller` (never `register`) for React Native compatibility; use project form field components or Tamagui `Input` + `Label` as fallback
 
 5. **Handle submission** — `handleSubmit(onSubmit)` where `onSubmit` receives the fully-typed payload; use `setError("root", ...)` for server-returned errors
 
