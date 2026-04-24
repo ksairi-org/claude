@@ -1,5 +1,5 @@
 ---
-name: test
+name: testing
 description: Write or fix component and hook tests using @testing-library/react-native and jest-expo. Use when adding new screens, hooks, or form logic, or when a test is failing.
 argument-hint: "<file_or_feature_to_test>"
 ---

@@ -14,12 +14,31 @@ fi
 
 echo "=== expo-rn-plugin app setup ==="
 
+# ── 0. Required system dependencies ─────────────────────────────────────────
+ensure_brew_pkg() {
+  local pkg="$1" tap="${2:-}"
+  if command -v "$pkg" &>/dev/null; then
+    echo "  ✓ $pkg already installed"
+    return
+  fi
+  if ! command -v brew &>/dev/null; then
+    echo "  ERROR: Homebrew not found. Install it first: https://brew.sh"
+    exit 1
+  fi
+  echo "  Installing $pkg..."
+  [ -n "$tap" ] && brew tap "$tap"
+  brew install "$pkg"
+}
+
+ensure_brew_pkg jq
+ensure_brew_pkg doppler dopplerhq/cli
+
 # ── 1. Link figma-tamagui-sync CLI ───────────────────────────────────────────
 PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SYNC_TOOL="$PLUGIN_ROOT/tools/figma-tamagui-sync"
 
 echo "→ Linking figma-tamagui-sync CLI..."
-(cd "$SYNC_TOOL" && npm link --silent)
+(cd "$SYNC_TOOL" && yarn link --silent)
 echo "   Linked: $(which figma-tamagui-sync)"
 
 cd "$APP_ROOT"

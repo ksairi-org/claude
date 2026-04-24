@@ -15,6 +15,7 @@
 - Store auth tokens in MMKV or AsyncStorage — use `expo-secure-store`
 - Handle raw card data — use Stripe `PaymentSheet` only
 - Log PII in Sentry tags or breadcrumbs
+- Log PII or payment data in analytics events — use opaque internal IDs only
 
 ## Always do
 
@@ -25,17 +26,20 @@
 
 ## Stack quick-ref
 
-- **State:** server state → react-query hooks; UI state → Zustand + MMKV. Run `/zustand`
-- **Forms:** RHF + zod + `@ksairi-org/react-form`. Run `/form`
-- **Auth:** `@ksairi-org/react-auth-*` + Google/Apple. Run `/auth`
-- **Payments:** Stripe `PaymentSheet`. Run `/stripe`
-- **Errors:** Sentry. Run `/sentry`
-- **API hooks:** orval. Run `/orval`
-- **Env vars:** Doppler. Run `/doppler`
-- **Design:** Figma tokens in `src/theme/`. Run `/figma`
-- **Scaffold:** CRUD from DB table. Run `/scaffold`
-- **Push notifications:** FCM + expo-notifications. Run `/notifications`
-- **Tests:** jest-expo + React Testing Library + `renderWithProviders`. Run `/test`
+Run `/expo-rn-plugin:coding-standards` to load full standards. Quick pointers:
+
+- **State:** server state → react-query hooks; UI state → Zustand + MMKV
+- **Forms:** RHF + zod + `@ksairi-org/react-form` — `/expo-rn-plugin:form`
+- **Auth:** `@ksairi-org/react-auth-*` + Google/Apple
+- **Payments:** Stripe `PaymentSheet`
+- **Errors:** Sentry
+- **API hooks:** orval-generated hooks in `src/api/generated/`
+- **Env vars:** Doppler
+- **Design:** Figma tokens in `src/theme/` — `/expo-rn-plugin:figma`
+- **Scaffold:** CRUD from DB table — `/expo-rn-plugin:scaffold`
+- **Push notifications:** FCM + expo-notifications
+- **Tests:** jest-expo + React Testing Library + `renderWithProviders` — `/expo-rn-plugin:testing`
+- **Analytics:** Firebase Analytics (default), PostHog, Amplitude — `/expo-rn-plugin:analytics`
 
 ## Project context
 

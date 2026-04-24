@@ -12,7 +12,6 @@
       "Bash(yarn install:*)",
       "Bash(yarn sync-env-vars:*)",
       "Bash(yarn orval:*)",
-      "Bash(npx:*)",
       "Bash(node:*)",
       "Bash(git status:*)",
       "Bash(git diff:*)",

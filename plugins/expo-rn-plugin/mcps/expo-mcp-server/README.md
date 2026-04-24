@@ -54,7 +54,7 @@ Each project that uses this server needs an `mcp.config.json` at its root. Run `
 
 Required for Supabase backend tools (`scaffold_form`, `scaffold_crud`, `inspect_push_tokens`, `send_test_push`):
 
-```
+```env
 SUPABASE_URL=https://<project>.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
 ```

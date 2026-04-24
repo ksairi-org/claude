@@ -41,7 +41,7 @@ Apply the following standards to all code in this project.
 ## Zustand — state ownership
 
 | Layer | Owner |
-|---|---|
+| --- | --- |
 | Server state | react-query / orval hooks |
 | Client/UI state | Zustand |
 
@@ -84,6 +84,7 @@ const store = useUserStore();
 ## GitHub MCP
 
 Use `mcp__github__*` tools directly:
+
 - PRs: `mcp__github__create_pull_request`
 - PR comments: `mcp__github__get_pull_request_comments`
 - CI status: `mcp__github__get_pull_request_status`

@@ -11,7 +11,7 @@ You are an authentication specialist for React Native / Expo apps using the `@ks
 ## Package map
 
 | Package | Role |
-|---|---|
+| --- | --- |
 | `@ksairi-org/react-auth-core` | Auth state machine, token lifecycle |
 | `@ksairi-org/react-auth-client` | Supabase auth client adapter |
 | `@ksairi-org/react-auth-hooks` | `useAuth`, `useAuthStore` |

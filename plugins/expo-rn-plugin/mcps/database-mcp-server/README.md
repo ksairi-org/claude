@@ -29,7 +29,7 @@ MCP server for database operations. Provides schema introspection, RLS policy in
 
 ### Environment variables
 
-```
+```env
 SUPABASE_URL=https://<project>.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
 ```

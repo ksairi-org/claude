@@ -2,11 +2,17 @@
 
 Claude Code plugin for React Native / Expo projects. Provides MCP servers, scaffolding skills, Figma sync, i18n review, token optimization, and TypeScript code intelligence — all in one installable plugin. Supports Supabase, Firebase, and REST backends.
 
+## Requirements
+
+macOS or Linux. Windows users must run inside [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) — the plugin scripts require bash and Homebrew (via Linuxbrew in WSL2).
+
 ## Install
 
 ```bash
-claude plugin install expo-rn-plugin@your-marketplace --scope project
+claude plugin install expo-rn-plugin --scope project
 ```
+
+> Registry URL will be updated once published.
 
 MCP servers ship with pre-built `dist/` — no build step required after install.
 
@@ -23,8 +29,11 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup-app.sh"
 | Skill | Description |
 | --- | --- |
 | `scaffold <table>` | Generate full CRUD (types, hooks, screens, routes, form) from a database table |
+| `form <feature>` | Generate a zod schema, react-hook-form hook, and Tamagui form component |
 | `figma <url_or_node_id>` | Compare screen implementation against Figma design and fix discrepancies |
 | `coding-standards` | Load project coding standards on demand (TypeScript, Tamagui, Zustand, Lingui) |
+| `analytics` | Load analytics standards — event naming, screen tracking, user identification, privacy rules (Firebase default; PostHog, Amplitude alternatives) |
+| `testing` | Write or fix component and hook tests using jest-expo and @testing-library/react-native |
 
 ### Agents (available in `/agents`)
 
@@ -33,6 +42,8 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup-app.sh"
 | `expo-scaffolder` | Haiku | Scaffolding specialist — delegates heavy CRUD generation out of main context |
 | `database-specialist` | Sonnet | DB queries, migrations, RLS policies |
 | `i18n-reviewer` | Haiku | Audit Lingui catalogs for missing translations and hardcoded strings |
+| `auth-specialist` | Sonnet | Supabase auth flows, Google/Apple sign-in, token lifecycle |
+| `payment-specialist` | Sonnet | Stripe PaymentSheet, PCI compliance, webhooks |
 
 ### MCP Servers
 
@@ -56,7 +67,7 @@ All servers that require secrets are wrapped via Doppler (`bin/mcp-run.sh`).
 | --- | --- | --- |
 | `SessionStart` | `build-mcp-servers.sh` | Builds MCP servers if outdated (first run or plugin update) |
 | `SessionStart` | `sync-figma-tokens.sh` | Syncs Tamagui design tokens from Figma if `FIGMA_FILE_ID` + `FIGMA_API_KEY` are set (no-op otherwise) |
-| `PreToolUse` (Bash) | `rtk-rewrite.sh` | RTK token optimizer — 60–90% token savings on shell commands (no-op if RTK not installed) |
+| `PreToolUse` (Write/Edit) | `guard-generated-files.sh` | Blocks edits to auto-generated files (`src/api/generated/`, `src/theme/`) — run the generator instead |
 | `PostToolUse` (Write/Edit) | `tsc-check.sh` | Runs `tsc --noEmit` after file edits in TypeScript projects |
 | `Stop` | `context-warning.sh` | Warns when context window ≥ 70% — prompts for `/compact` |
 
@@ -71,7 +82,7 @@ All servers that require secrets are wrapped via Doppler (`bin/mcp-run.sh`).
 
 TypeScript Language Server (`typescript-language-server`) — provides go-to-definition, find references, and live diagnostics for `.ts`, `.tsx`, `.js`, `.jsx` files.
 
-Requires: `npm install -g typescript-language-server typescript`
+Requires: `yarn add -D typescript-language-server typescript` in your project root.
 
 ## Configuration
 
@@ -104,7 +115,6 @@ This keeps session startup context small and only loads standards when needed.
 
 - `coding-standards` skill loads on demand — not burned on every session
 - `expo-scaffolder` and `i18n-reviewer` use Haiku — cheap for high-volume generation/audit tasks
-- RTK hook saves 60–90% on shell command tokens automatically
 - `context-warning` hook reminds you to `/compact` at 70% context — prevents wasteful re-reads
 
 ## Development
@@ -114,7 +124,7 @@ This keeps session startup context small and only loads standards when needed.
 Install the git pre-push hook from the repo root — it rebuilds `dist/` automatically before every push:
 
 ```bash
-bash scripts/install-hooks.sh
+bash scripts/setup-claude.sh
 ```
 
 ### Build MCP servers manually

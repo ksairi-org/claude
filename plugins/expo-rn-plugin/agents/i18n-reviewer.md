@@ -25,7 +25,7 @@ You are a Lingui i18n auditor for React Native / Expo projects. Your role is to 
 
 ## Output format
 
-```
+```markdown
 ## i18n Audit — <date>
 
 ### Hardcoded strings (N)
