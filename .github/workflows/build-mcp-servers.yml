@@ -27,8 +27,10 @@ jobs:
         with:
           node-version: 24
 
-      - name: Enable Corepack
-        run: corepack enable && corepack prepare yarn@4.9.2 --activate
+      - name: Install Yarn Berry
+        run: |
+          sudo npm install -g yarn@4.9.2
+          yarn --version
 
       - name: Install & build ${{ matrix.server }}
         working-directory: plugins/expo-rn-plugin/mcps/${{ matrix.server }}
