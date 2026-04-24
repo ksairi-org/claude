@@ -103,7 +103,7 @@ node -e "
 "
 
 # ── 2. Link figma-tamagui-sync CLI ───────────────────────────────────────────
-SYNC_TOOL="$PLUGIN_ROOT/tools/figma-tamagui-sync"
+SYNC_TOOL="$PLUGIN_ROOT/figma/figma-tamagui-sync"
 
 echo "→ Linking figma-tamagui-sync CLI..."
 (cd "$SYNC_TOOL" && yarn link --silent)
@@ -121,7 +121,7 @@ node -e "
 
   if (!pkg.scripts['sync-env-vars']) {
     pkg.scripts['sync-env-vars'] =
-      'doppler secrets substitute env.template.yaml --output .env --config \$0';
+      'doppler secrets substitute env.template.yaml --output .env';
     console.log('   Added: sync-env-vars');
     changed = true;
   } else {
@@ -138,7 +138,7 @@ node -e "
   }
 
   const preStart = pkg.scripts['pre-start'] || '';
-  const preamble = 'yarn sync-env-vars \$0; yarn sync-design-tokens; ';
+  const preamble = 'yarn sync-env-vars; yarn sync-design-tokens; ';
   if (preStart && !preStart.includes('sync-env-vars')) {
     pkg.scripts['pre-start'] = preamble + preStart;
     console.log('   Patched: pre-start runs sync-env-vars + sync-design-tokens first');
@@ -202,9 +202,13 @@ JSON
   echo "   Created: .lsp.json"
 fi
 
-echo "→ Installing typescript-language-server..."
-yarn add -D typescript-language-server --silent
-echo "   Done"
+if ! node -e "process.exit(require('./package.json').devDependencies?.['typescript-language-server'] ? 0 : 1)" 2>/dev/null; then
+  echo "→ Installing typescript-language-server and typescript..."
+  yarn add -D typescript-language-server typescript --silent
+  echo "   Done"
+else
+  echo "→ typescript-language-server already installed"
+fi
 
 # ── 7. Doppler project link ───────────────────────────────────────────────────
 echo ""
@@ -219,19 +223,26 @@ else
 fi
 
 # ── 8. Patch CLAUDE.md with Figma file ID from Doppler ───────────────────────
+FIGMA_PATCHED=false
 FIGMA_FILE_ID_VAL=$(doppler secrets get FIGMA_FILE_ID --plain 2>/dev/null || true)
 if [ -n "$FIGMA_FILE_ID_VAL" ]; then
   sed -i '' \
     "s|<!-- Fill in: API base URL, Supabase project ref, Sentry project, Figma file ID -->|- Figma file ID: ${FIGMA_FILE_ID_VAL}\n<!-- Fill in: API base URL, Supabase project ref, Sentry project -->|" \
     "$APP_ROOT/CLAUDE.md"
   echo "→ Patched CLAUDE.md with Figma file ID from Doppler"
+  FIGMA_PATCHED=true
 fi
 
 # ── Done ──────────────────────────────────────────────────────────────────────
 echo ""
 echo "✓ Done. Next steps:"
-echo "  1. Edit CLAUDE.md — fill in API base URL, Supabase ref, Sentry project"
-echo "     (project name and Figma file ID already filled in)"
+if [ "$FIGMA_PATCHED" = true ]; then
+  echo "  1. Edit CLAUDE.md — fill in API base URL, Supabase ref, Sentry project"
+  echo "     (project name and Figma file ID already filled in)"
+else
+  echo "  1. Edit CLAUDE.md — fill in API base URL, Supabase ref, Sentry project, Figma file ID"
+  echo "     (project name already filled in; run 'doppler setup' then re-run this script to auto-fill Figma file ID)"
+fi
 echo "  2. Review mcp.config.json — paths were auto-detected, adjust if needed"
 echo "  3. Start Claude: claude"
 echo ""

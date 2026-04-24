@@ -80,32 +80,6 @@ Never identify before auth completes. Clear on sign-out.
 - User IDs passed to `identify()` must be your internal opaque ID (UUID) — not email or phone
 - Sentry and Analytics are separate: do not cross-log breadcrumbs that contain user-identifiable info
 
-## PostHog alternative
+## Switching providers
 
-```ts
-import PostHog from 'posthog-react-native';
-
-const client = new PostHog('YOUR_API_KEY', { host: 'https://eu.posthog.com' });
-
-export const Analytics = {
-  identify: (userId: string, traits?: Record<string, string>) => client.identify(userId, traits),
-  reset: () => client.reset(),
-  screen: (name: string) => client.screen(name),
-  track: (event: string, params?: Record<string, unknown>) => client.capture(event, params),
-};
-```
-
-## Amplitude alternative
-
-```ts
-import { init, track, setUserId, reset } from '@amplitude/analytics-react-native';
-
-init('YOUR_API_KEY');
-
-export const Analytics = {
-  identify: (userId: string) => setUserId(userId),
-  reset: () => reset(),
-  screen: (name: string) => track('screen_viewed', { screen_name: name }),
-  track: (event: string, params?: Record<string, unknown>) => track(event, params),
-};
-```
+If the project uses PostHog or Amplitude instead of Firebase, ask for the relevant implementation pattern and it will be provided on demand.

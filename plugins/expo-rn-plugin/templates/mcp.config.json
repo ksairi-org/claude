@@ -10,7 +10,7 @@
   },
   "libs": [],
   "router": "expo-router",
-  "routesDir": "src/app",
+  "routesDir": "app",
   "orval": {
     "sdkLib": "src/api/generated"
   },

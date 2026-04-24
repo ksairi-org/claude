@@ -83,14 +83,6 @@ const store = useUserStore();
   3. Sync: `yarn sync-env-vars stg`
 - `EXPO_PUBLIC_` prefix required for client-side vars
 
-## GitHub MCP
-
-Use `mcp__github__*` tools directly:
-
-- PRs: `mcp__github__create_pull_request`
-- PR comments: `mcp__github__get_pull_request_comments`
-- CI status: `mcp__github__get_pull_request_status`
-
 ## HTTP / API
 
 - Use orval-generated hooks for all API calls — never `axios` directly in components
@@ -112,15 +104,4 @@ Use `mcp__github__*` tools directly:
 - Test runner: `jest-expo`; render helper: `@testing-library/react-native`
 - Always wrap renders in a `renderWithProviders` helper that includes Tamagui, query client, and i18n providers
 - Assert on what the user sees (`screen.getByText`, `screen.getByRole`) — never on internal state
-- Run `/test` skill for canonical test patterns and provider setup
-
-## E2E Tests (Maestro)
-
-Flows in `.maestro/`. Run: `maestro test .maestro/<flow>.yaml`
-Text matchers preferred over testIDs.
-
-## OTA Updates
-
-```bash
-eas update --channel production --message "description"
-```
+- Run `/expo-rn-plugin:testing` for canonical test patterns and provider setup

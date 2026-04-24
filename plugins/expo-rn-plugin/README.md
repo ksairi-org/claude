@@ -4,52 +4,51 @@ Claude Code plugin for React Native / Expo projects. Provides MCP servers, scaff
 
 ## Requirements
 
-macOS or Linux. Windows users must run inside [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) — the plugin scripts require bash and Homebrew (via Linuxbrew in WSL2).
+- macOS or Linux (Windows: [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install))
+- Node.js 18+
+- Yarn Berry (`corepack enable && corepack prepare yarn@stable --activate`)
+- [Homebrew](https://brew.sh) — setup-app.sh installs `jq` and `doppler` via brew
+- Claude Code CLI
 
 ## New app quickstart
 
 ```bash
-# 1. Create your Expo app (if starting fresh)
+# 1. Create your Expo app
 yarn create expo-app my-app && cd my-app
 
-# 2. Install the plugin
+# 2. Install the plugin (sets CLAUDE_PLUGIN_ROOT automatically)
 claude plugin install expo-rn-plugin --scope project
-# → You'll be prompted for your Doppler project name and config (dev/stg/prod)
 
-# 3. Run one-time setup from your app root
+# 3. Run one-time setup — interactive, takes ~2 min
 bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup-app.sh"
-# → Copies templates (.mcp.json, CLAUDE.md, mcp.config.json, .claude/)
-# → Links figma-tamagui-sync CLI
-# → Adds sync-design-tokens script to package.json
-# → Creates .lsp.json for TypeScript LSP
+# → Copies CLAUDE.md, mcp.config.json, .mcp.json, .claude/ commands
+# → Auto-fills CLAUDE.md with project name from package.json
+# → Detects actual dir structure and writes mcp.config.json
+# → Adds sync-env-vars + sync-design-tokens to package.json; wires pre-start
+# → Scaffolds env.template.yaml; ensures .env is gitignored
+# → Installs typescript-language-server and typescript
+# → Runs doppler setup (interactive) and patches Figma file ID into CLAUDE.md
 
-# 4. Finish manually
-#    a) Edit CLAUDE.md — fill in project name and context placeholders
-#    b) Edit mcp.config.json — adjust component paths for your structure
-#    c) Set secrets in Doppler, then sync:
-yarn sync-env-vars dev
-#    d) Add LSP devDep:
-yarn add -D typescript-language-server
+# 4. Edit CLAUDE.md — fill in the three remaining placeholders:
+#    API base URL, Supabase project ref, Sentry project
+#    (all other fields are auto-populated by setup-app.sh)
 
 # 5. Start Claude
 claude
 ```
 
+> `CLAUDE_PLUGIN_ROOT` is set automatically by `claude plugin install`. Run the bash
+> command from within a `claude` session or via `claude run` if you need the variable
+> outside of it.
+
 ## Install (existing project)
 
 ```bash
 claude plugin install expo-rn-plugin --scope project
-```
-
-> Registry URL will be updated once published.
-
-MCP servers ship with pre-built `dist/` — no build step required after install.
-
-Run setup once from your app root:
-
-```bash
 bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup-app.sh"
 ```
+
+MCP servers ship with pre-built `dist/` — no build step required after install.
 
 ## Plugin components
 
@@ -101,18 +100,11 @@ All servers that require secrets are wrapped via Doppler (`bin/mcp-run.sh`).
 | `PostToolUse` (Write/Edit) | `tsc-check.sh` | Runs `tsc --noEmit` after file edits in TypeScript projects |
 | `Stop` | `context-warning.sh` | Warns when context window ≥ 70% — prompts for `/compact` |
 
-### Monitors (background)
-
-| Monitor | Trigger | Description |
-| --- | --- | --- |
-| `pending-migrations` | Always | Detects unapplied database migrations on session start and every 5 min |
-| `eas-active-builds` | On `scaffold` skill invoke | Polls EAS for in-progress / failed builds |
-
 ### LSP
 
 TypeScript Language Server (`typescript-language-server`) — provides go-to-definition, find references, and live diagnostics for `.ts`, `.tsx`, `.js`, `.jsx` files.
 
-Requires: `yarn add -D typescript-language-server typescript` in your project root.
+`setup-app.sh` installs `typescript-language-server` and `typescript` as devDependencies automatically.
 
 ## Configuration
 
