@@ -27,9 +27,11 @@ jobs:
         with:
           node-version: 24
 
-      - name: Install Yarn Berry
+      - name: Setup Yarn Berry
         run: |
-          sudo npm install -g yarn@4.9.2
+          sudo rm -f /usr/bin/yarn /usr/local/bin/yarn
+          corepack enable
+          corepack prepare yarn@4.9.2 --activate
           yarn --version
 
       - name: Install & build ${{ matrix.server }}
