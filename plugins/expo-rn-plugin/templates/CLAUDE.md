@@ -30,9 +30,9 @@ Run `/expo-rn-plugin:coding-standards` to load full standards. Quick pointers:
 
 - **State:** server state → react-query hooks; UI state → Zustand + MMKV
 - **Forms:** RHF + zod + Tamagui fields — `/expo-rn-plugin:form`
-- **Auth:** Supabase auth + Google/Apple — `/expo-rn-plugin:auth`
-- **Payments:** Stripe `PaymentSheet`
-- **Errors:** Sentry
+- **Auth:** Supabase auth + Google/Apple — `/auth`
+- **Payments:** Stripe `PaymentSheet` — `/expo-rn-plugin:stripe`
+- **Errors:** Sentry — `/expo-rn-plugin:sentry`
 - **API hooks:** orval-generated hooks in `src/api/generated/`
 - **Env vars:** Doppler
 - **Design:** Figma tokens in `src/theme/` — `/expo-rn-plugin:figma`

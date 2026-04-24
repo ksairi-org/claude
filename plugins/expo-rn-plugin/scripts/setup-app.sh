@@ -34,6 +34,12 @@ ensure_brew_pkg() {
 ensure_brew_pkg jq
 ensure_brew_pkg doppler dopplerhq/cli
 
+# Optional CLI checks (non-blocking)
+for _cli in eas supabase; do
+  command -v "$_cli" &>/dev/null || echo "  ⚠ $_cli not found — install if using EAS builds / Supabase migrations"
+done
+unset _cli
+
 # ── 1. Copy templates (skip files that already exist) ────────────────────────
 echo "→ Copying templates..."
 
@@ -103,11 +109,12 @@ node -e "
 "
 
 # ── 2. Link figma-tamagui-sync CLI ───────────────────────────────────────────
-SYNC_TOOL="$PLUGIN_ROOT/figma/figma-tamagui-sync"
+SYNC_TOOL="$PLUGIN_ROOT/tools/figma-tamagui-sync"
 
-echo "→ Linking figma-tamagui-sync CLI..."
-(cd "$SYNC_TOOL" && yarn link --silent)
-echo "   Linked: $(which figma-tamagui-sync 2>/dev/null || echo 'not on PATH yet — restart shell')"
+echo "→ Installing figma-tamagui-sync CLI..."
+chmod +x "$SYNC_TOOL/bin/figma-tamagui-sync.js"
+ln -sf "$SYNC_TOOL/bin/figma-tamagui-sync.js" /usr/local/bin/figma-tamagui-sync
+echo "   Installed: $(which figma-tamagui-sync 2>/dev/null || echo 'not on PATH yet — restart shell')"
 
 cd "$APP_ROOT"
 
@@ -144,7 +151,9 @@ node -e "
     console.log('   Patched: pre-start runs sync-env-vars + sync-design-tokens first');
     changed = true;
   } else if (!preStart) {
-    console.log('   No pre-start script found — add sync-env-vars manually');
+    pkg.scripts['pre-start'] = 'yarn sync-env-vars; yarn sync-design-tokens';
+    console.log('   Created: pre-start runs sync-env-vars + sync-design-tokens');
+    changed = true;
   } else {
     console.log('   Already patched: pre-start');
   }
@@ -167,6 +176,19 @@ FIGMA_API_KEY={{ .FIGMA_API_KEY }}
 FIGMA_FILE_ID={{ .FIGMA_FILE_ID }}
 SUPABASE_URL={{ .SUPABASE_URL }}
 SUPABASE_SERVICE_ROLE_KEY={{ .SUPABASE_SERVICE_ROLE_KEY }}
+
+# Optional: Sentry — uncomment and add secrets in Doppler
+# EXPO_PUBLIC_SENTRY_DSN={{ .SENTRY_DSN }}
+# EXPO_PUBLIC_ENV={{ .EXPO_PUBLIC_ENV }}
+# SENTRY_AUTH_TOKEN={{ .SENTRY_AUTH_TOKEN }}
+# SENTRY_ORG={{ .SENTRY_ORG }}
+# SENTRY_PROJECT={{ .SENTRY_PROJECT }}
+
+# Optional: Stripe — uncomment and add secrets in Doppler
+# EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY={{ .STRIPE_PUBLISHABLE_KEY }}
+
+# Optional: Firebase notifications — uncomment and add secrets in Doppler
+# FIREBASE_SERVER_KEY={{ .FIREBASE_SERVER_KEY }}
 YAML
   echo "   Created: env.template.yaml"
 fi
@@ -222,6 +244,22 @@ else
   doppler setup
 fi
 
+# ── 7b. Write Doppler project/config back to mcp.config.json ─────────────────
+if [ -f "$APP_ROOT/.doppler.yaml" ]; then
+  _dp=$(grep "project:" "$APP_ROOT/.doppler.yaml" | head -1 | sed 's/.*project:[[:space:]]*//' | tr -d '[:space:]')
+  _dc=$(grep "config:" "$APP_ROOT/.doppler.yaml" | head -1 | sed 's/.*config:[[:space:]]*//' | tr -d '[:space:]')
+  if [ -n "$_dp" ]; then
+    node -e "
+      const fs = require('fs');
+      const cfg = JSON.parse(fs.readFileSync('$APP_ROOT/mcp.config.json', 'utf8'));
+      cfg.doppler = { project: '${_dp}', config: '${_dc:-dev}' };
+      fs.writeFileSync('$APP_ROOT/mcp.config.json', JSON.stringify(cfg, null, 2) + '\n');
+    "
+    echo "→ Wrote doppler.project=${_dp}, doppler.config=${_dc:-dev} to mcp.config.json"
+  fi
+  unset _dp _dc
+fi
+
 # ── 8. Patch CLAUDE.md with values from Doppler ──────────────────────────────
 # Gather all values first, then do one replacement so placeholder variants
 # can't cause mismatches (e.g. if Figma is absent the original placeholder
@@ -241,6 +279,11 @@ if [ -f "$APP_ROOT/sentry.properties" ]; then
 fi
 if [ -z "$SENTRY_PROJECT_VAL" ]; then
   SENTRY_PROJECT_VAL=$(doppler secrets get SENTRY_PROJECT --plain 2>/dev/null || true)
+fi
+if [ -z "$SENTRY_PROJECT_VAL" ] && [ -t 0 ]; then
+  read -rp "   Sentry project slug (press Enter to skip): " _sentry_input
+  [ -n "$_sentry_input" ] && SENTRY_PROJECT_VAL="$_sentry_input"
+  unset _sentry_input
 fi
 
 # Build replacement: bullet lines for found values + one remaining placeholder
