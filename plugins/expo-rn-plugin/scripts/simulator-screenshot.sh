@@ -28,6 +28,7 @@ if command -v adb &>/dev/null && adb devices 2>/dev/null | tail -n +2 | grep -qE
   adb exec-out screencap -p > "$OUTFILE"
 
   echo "--- recent RN errors (logcat) ---" >&2
+  # shellcheck disable=SC2035
   adb logcat -d -t 50 ReactNativeJS:E *:S 2>/dev/null >&2 || true
 
   echo "$OUTFILE"

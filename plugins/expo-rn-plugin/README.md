@@ -6,46 +6,45 @@ Claude Code plugin for React Native / Expo projects. Provides MCP servers, scaff
 
 - macOS or Linux (Windows: [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install))
 - Node.js 18+
+- Python 3 (`python3`) — used by `mcp-run.sh` and `guard-generated-files.sh` to parse JSON
 - Yarn Berry (`corepack enable && corepack prepare yarn@stable --activate`)
 - [Homebrew](https://brew.sh) — setup-app.sh installs `jq` and `doppler` via brew
 - Claude Code CLI
 
 ## New app quickstart
 
+> **Before step 3:** `setup-app.sh` runs `doppler setup` interactively and uses your Doppler
+> secrets to auto-fill CLAUDE.md. You need a Doppler account and a project created (with secrets
+> added) before running it — see [Doppler setup](#doppler-setup) below.
+>
+> **`CLAUDE_PLUGIN_ROOT`** is set automatically inside `claude` sessions. To run setup from a plain terminal (outside `claude`), use the full path: `bash /path/to/expo-rn-plugin/scripts/setup-app.sh`
+
 ```bash
 # 1. Create your Expo app
 yarn create expo-app my-app && cd my-app
 
-# 2. Install the plugin (sets CLAUDE_PLUGIN_ROOT automatically)
+# 2. Install the plugin
 claude plugin install expo-rn-plugin --scope project
+# Testing from source? Use: claude --plugin-dir /path/to/expo-rn-plugin
 
 # 3. Run one-time setup — interactive, takes ~2 min
 bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup-app.sh"
-# → Copies CLAUDE.md, mcp.config.json, .mcp.json, .claude/ commands
+# → Copies CLAUDE.md, mcp.config.json, .mcp.json, .claude/settings.json, .claude/commands/
 # → Auto-fills CLAUDE.md with project name from package.json
 # → Detects actual dir structure and writes mcp.config.json
-# → Adds sync-env-vars + sync-design-tokens to package.json; wires pre-start
+# → Adds sync-env-vars + sync-design-tokens to package.json; wires prestart
 # → Scaffolds env.template.yaml; ensures .env is gitignored
 # → Installs typescript-language-server and typescript
 # → Runs doppler setup (interactive); auto-fills Figma file ID,
 #    Supabase project ref, and Sentry project into CLAUDE.md
 
-# 4. Edit CLAUDE.md — fill in the one remaining placeholder:
-#    API base URL
+# 4. Edit CLAUDE.md — in the "## Project context" section, fill in:
+#    - api: https://api.your-domain.com
 #    (project name, Figma file ID, Supabase ref, Sentry project are auto-filled)
 
 # 5. Start Claude
 claude
 ```
-
-> `CLAUDE_PLUGIN_ROOT` is set automatically inside `claude` sessions. If you need to run
-> setup from your terminal directly (outside of a `claude` session), substitute the full
-> path to the plugin directory:
->
-> ```bash
-> bash /path/to/expo-rn-plugin/scripts/setup-app.sh
-> # e.g. ~/.claude/plugins/expo-rn-plugin/scripts/setup-app.sh
-> ```
 
 ## Install (existing project)
 
@@ -89,6 +88,8 @@ These commands are copied to `.claude/commands/` by `setup-app.sh` and are avail
 | `/sync-tokens` | Pull latest design tokens from Figma mid-session |
 | `/preview [screen]` | Screenshot the running simulator and verify the UI visually |
 
+Skill-backed stubs (thin wrappers — see Skills table above for full docs): `/form`, `/scaffold`, `/figma`, `/sentry`, `/stripe`.
+
 ### Agents (available in `/agents`)
 
 | Agent | Model | Description |
@@ -130,7 +131,7 @@ All servers that require secrets are wrapped via Doppler (`bin/mcp-run.sh`).
 | Monitor | When active | Effect |
 | --- | --- | --- |
 | `pending-migrations` | Always | Emits a warning when Supabase migration files are unapplied; re-checks every 5 min |
-| `eas-active-builds` | While `/scaffold` skill runs | Polls EAS for in-progress builds and prints status updates every 60 s |
+| `eas-active-builds` | Always (no-ops when `eas` CLI absent or no active builds) | Polls EAS for in-progress builds and prints status updates every 60 s |
 
 ### LSP
 
@@ -140,14 +141,14 @@ TypeScript Language Server (`typescript-language-server`) — provides go-to-def
 
 ## Configuration
 
-When installing the plugin you'll be prompted for:
+The plugin has two optional install-time config keys:
 
 | Key | Description |
 | --- | --- |
 | `doppler_project` | Your Doppler project name (e.g. `my-app`) |
 | `doppler_config` | Config to use (`dev` / `stg` / `prod`, default: `dev`) |
 
-`setup-app.sh` also runs `doppler setup` interactively and writes both values to `mcp.config.json` automatically — so if you run setup first, these fields are pre-filled for you.
+You do not need to fill these in manually. `setup-app.sh` runs `doppler setup` interactively and writes both values to `mcp.config.json` automatically. The install-time prompts are a fallback only.
 
 ## mcp.config.json
 
@@ -183,7 +184,7 @@ Doppler stores all secrets (API keys, Supabase URLs, etc.) so nothing lives in `
    - Optional: `STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
 4. When `setup-app.sh` runs `doppler setup`, select your project and `dev` config
 
-After setup, `yarn start` automatically syncs secrets to `.env` via the `pre-start` script.
+After setup, `yarn start` automatically writes `.env` from Doppler secrets via the `prestart` script. Design tokens also sync on `yarn start` (via `doppler run` inside the script — no extra flags needed).
 
 ## Project CLAUDE.md
 
@@ -208,12 +209,13 @@ This keeps session startup context small and only loads standards when needed.
 - `coding-standards` skill loads on demand — not burned on every session
 - `expo-scaffolder` and `i18n-reviewer` use Haiku — cheap for high-volume generation/audit tasks
 - `context-warning` hook reminds you to `/compact` at 70% context — prevents wasteful re-reads
+- Install [RTK](https://github.com/rtk-ai/rtk) (`rtk init -g`) — wraps all CLI commands to strip verbose output, cutting per-command token usage by 60–90%
 
 ## Development
 
 ### First-time setup (contributors)
 
-Install Claude Code plugins (compound-engineering, expo, github) from the repo root:
+Install Claude Code plugins (compound-engineering, expo, github) — run from the plugin root:
 
 ```bash
 bash scripts/setup-claude.sh
@@ -222,8 +224,8 @@ bash scripts/setup-claude.sh
 ### Build MCP servers manually
 
 ```bash
-cd mcps/expo-mcp-server && yarn build
-cd mcps/database-mcp-server && yarn build
+cd mcps/expo-mcp-server && yarn install --immutable && yarn build
+cd mcps/database-mcp-server && yarn install --immutable && yarn build
 ```
 
 `dist/` is committed to git. CI will fail if you push source changes without rebuilding. The pre-push hook handles this for you automatically.
@@ -245,4 +247,4 @@ claude plugin validate
 1. Create a directory under `mcps/` (e.g. `mcps/my-mcp-server/`)
 2. Follow the structure of `mcps/expo-mcp-server/` (`src/index.ts`, `src/tools/`, `package.json`, `tsconfig.json`)
 3. Add an entry to `.mcp.json` using `${CLAUDE_PLUGIN_ROOT}/bin/mcp-run.sh` as the command
-4. The `scripts/build-mcp-servers.sh` hook will build it automatically on next session start
+4. Add `build_server "my-mcp-server"` to `scripts/build-mcp-servers.sh` — the script hardcodes server names, it does not auto-discover new ones

@@ -3,6 +3,9 @@
 # Run from the app root: bash <plugin-root>/scripts/setup-app.sh
 set -euo pipefail
 
+# GNU sed (Linux) uses `sed -i`; BSD sed (macOS) requires `sed -i ''`
+sed_inplace() { if [[ "$(uname)" == "Darwin" ]]; then sed -i '' "$@"; else sed -i "$@"; fi }
+
 APP_ROOT="${1:-$PWD}"
 PKG="$APP_ROOT/package.json"
 ENV_TEMPLATE="$APP_ROOT/env.template.yaml"
@@ -68,7 +71,7 @@ done
 echo "→ Patching CLAUDE.md..."
 APP_NAME=$(node -e "console.log(require('$PKG').name || 'My App')")
 if grep -q "^# Project Name$" "$APP_ROOT/CLAUDE.md"; then
-  sed -i '' "s/^# Project Name$/# ${APP_NAME}/" "$APP_ROOT/CLAUDE.md"
+  sed_inplace "s/^# Project Name$/# ${APP_NAME}/" "$APP_ROOT/CLAUDE.md"
   echo "   Set project name: ${APP_NAME}"
 else
   echo "   Already patched"
@@ -119,6 +122,7 @@ ln -sf "$SYNC_TOOL/bin/figma-tamagui-sync.js" "$LOCAL_BIN/figma-tamagui-sync"
 # Add ~/.local/bin to PATH in shell rc files if not already present
 for RC in "$HOME/.zshrc" "$HOME/.bashrc"; do
   if [ -f "$RC" ] && ! grep -q '\.local/bin' "$RC"; then
+    # shellcheck disable=SC2016
     echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$RC"
   fi
 done
@@ -145,25 +149,25 @@ node -e "
 
   if (!pkg.scripts['sync-design-tokens']) {
     pkg.scripts['sync-design-tokens'] =
-      'FIGMA_TOKEN=\$FIGMA_API_KEY figma-tamagui-sync --fileId=\$FIGMA_FILE_ID --out=./src/theme';
+      'doppler run -- bash -c \"FIGMA_TOKEN=\$FIGMA_API_KEY figma-tamagui-sync --fileId=\$FIGMA_FILE_ID --out=./src/theme\"';
     console.log('   Added: sync-design-tokens');
     changed = true;
   } else {
     console.log('   Already present: sync-design-tokens');
   }
 
-  const preStart = pkg.scripts['pre-start'] || '';
+  const preStart = pkg.scripts['prestart'] || '';
   const preamble = 'yarn sync-env-vars; yarn sync-design-tokens; ';
   if (preStart && !preStart.includes('sync-env-vars')) {
-    pkg.scripts['pre-start'] = preamble + preStart;
-    console.log('   Patched: pre-start runs sync-env-vars + sync-design-tokens first');
+    pkg.scripts['prestart'] = preamble + preStart;
+    console.log('   Patched: prestart runs sync-env-vars + sync-design-tokens first');
     changed = true;
   } else if (!preStart) {
-    pkg.scripts['pre-start'] = 'yarn sync-env-vars; yarn sync-design-tokens';
-    console.log('   Created: pre-start runs sync-env-vars + sync-design-tokens');
+    pkg.scripts['prestart'] = 'yarn sync-env-vars; yarn sync-design-tokens';
+    console.log('   Created: prestart runs sync-env-vars + sync-design-tokens');
     changed = true;
   } else {
-    console.log('   Already patched: pre-start');
+    console.log('   Already patched: prestart');
   }
 
   if (changed) fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
@@ -295,17 +299,18 @@ if [ -z "$SENTRY_PROJECT_VAL" ] && [ -t 0 ]; then
 fi
 
 # Build replacement: bullet lines for found values + one remaining placeholder
+NL=$'\n'
 FILLED_LINES=""
 REMAINING_FIELDS="API base URL"
-[ -n "$FIGMA_FILE_ID_VAL" ] && FILLED_LINES="${FILLED_LINES}- Figma file ID: ${FIGMA_FILE_ID_VAL}\n"
-[ -n "$SUPABASE_REF" ]       && FILLED_LINES="${FILLED_LINES}- Supabase project ref: ${SUPABASE_REF}\n"
-[ -n "$SENTRY_PROJECT_VAL" ] && FILLED_LINES="${FILLED_LINES}- Sentry project: ${SENTRY_PROJECT_VAL}\n"
+[ -n "$FIGMA_FILE_ID_VAL" ] && FILLED_LINES="${FILLED_LINES}- Figma file ID: ${FIGMA_FILE_ID_VAL}${NL}"
+[ -n "$SUPABASE_REF" ]       && FILLED_LINES="${FILLED_LINES}- Supabase project ref: ${SUPABASE_REF}${NL}"
+[ -n "$SENTRY_PROJECT_VAL" ] && FILLED_LINES="${FILLED_LINES}- Sentry project: ${SENTRY_PROJECT_VAL}${NL}"
 [ -z "$FIGMA_FILE_ID_VAL" ] && REMAINING_FIELDS="${REMAINING_FIELDS}, Figma file ID"
 [ -z "$SUPABASE_REF" ]       && REMAINING_FIELDS="${REMAINING_FIELDS}, Supabase project ref"
 [ -z "$SENTRY_PROJECT_VAL" ] && REMAINING_FIELDS="${REMAINING_FIELDS}, Sentry project"
 
 REPLACEMENT="${FILLED_LINES}<!-- Fill in: ${REMAINING_FIELDS} -->"
-sed -i '' \
+sed_inplace \
   "s|<!-- Fill in: API base URL, Supabase project ref, Sentry project, Figma file ID -->|${REPLACEMENT}|" \
   "$APP_ROOT/CLAUDE.md"
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Monitor script — polls EAS for in-progress builds and emits status lines.
-# Started only when the scaffold skill is invoked (when: on-skill-invoke:scaffold).
+# Runs always; no-ops silently when eas CLI is absent or no builds are active.
 
 if ! command -v eas &>/dev/null; then
   exit 0

@@ -37,8 +37,7 @@ fi
 
 echo "Installing Claude Code plugins..."
 for plugin in "${PLUGINS[@]}"; do
-  name="${plugin%%@*}"
-  if claude plugin list 2>/dev/null | grep -q "$name"; then
+  if claude plugin list 2>/dev/null | grep -qF "$plugin"; then
     echo "  already installed: $plugin"
   else
     echo "  installing: $plugin"

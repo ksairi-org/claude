@@ -44,6 +44,7 @@ Run `/expo-rn-plugin:coding-standards` to load full standards. Quick pointers:
 ## Project context
 
 <!-- Fill in: API base URL, Supabase project ref, Sentry project, Figma file ID -->
+- api: `https://api.your-domain.com`
 
 - DB schema: `api` (not `public`)
 - Routes: `app/` via expo-router

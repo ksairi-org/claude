@@ -13,9 +13,11 @@ Call this after every UI change — new screen, layout fix, Tamagui token update
 ## Steps
 
 1. **Screenshot** — run the capture script:
+
+   ```bash
+   bash "${CLAUDE_PLUGIN_ROOT}/scripts/simulator-screenshot.sh"
    ```
-   bash ${CLAUDE_PLUGIN_ROOT}/scripts/simulator-screenshot.sh
-   ```
+
    The script prints the PNG path to stdout and emits device error logs to stderr.
 
 2. **Read the image** — use the Read tool on the PNG path returned by the script. You will see the current screen visually.
@@ -32,7 +34,7 @@ Call this after every UI change — new screen, layout fix, Tamagui token update
 
 6. **Iterate** — if the visual output doesn't match intent, fix the issue and re-run from step 1. Repeat until the screenshot confirms correctness.
 
-7. **Report** — describe what you see in the screenshot and confirm it matches the task goal. If the simulator isn't running, tell the user to start it with `yarn expo start --ios` or `yarn expo start --android`.
+7. **Report** — describe what you see in the screenshot and confirm it matches the task goal. If the simulator isn't running, tell the user to start it with `yarn start --ios` or `yarn start --android` (not `yarn expo start` — the `prestart` hook syncs env vars and tokens).
 
 ## Rules
 

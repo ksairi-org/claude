@@ -7,7 +7,11 @@ if ! command -v node >/dev/null 2>&1 || ! command -v yarn >/dev/null 2>&1; then
   exit 0
 fi
 
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:?CLAUDE_PLUGIN_ROOT is not set}"
+if [ -z "${CLAUDE_PLUGIN_ROOT:-}" ]; then
+  echo "[expo-rn-plugin] WARNING: CLAUDE_PLUGIN_ROOT not set — skipping MCP server build" >&2
+  exit 0
+fi
+PLUGIN_ROOT="$CLAUDE_PLUGIN_ROOT"
 
 build_server() {
   local src="$PLUGIN_ROOT/mcps/$1"
@@ -18,7 +22,7 @@ build_server() {
   fi
 
   echo "[expo-rn-plugin] Building $1..."
-  (cd "$src" && yarn --silent install --prefer-offline && yarn --silent build) || {
+  (cd "$src" && yarn install --immutable && yarn build) || {
     echo "[expo-rn-plugin] ERROR: failed to build $1" >&2
     return 1
   }

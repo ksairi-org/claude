@@ -21,6 +21,7 @@ unset _dir
 if [ -n "${NVM_BIN:-}" ]; then
   export PATH="$NVM_BIN:$PATH"
 elif [ -d "$HOME/.nvm/versions/node" ]; then
+  # shellcheck disable=SC2012
   _nvm_node=$(ls -v "$HOME/.nvm/versions/node" 2>/dev/null | tail -1)
   [ -n "$_nvm_node" ] && export PATH="$HOME/.nvm/versions/node/$_nvm_node/bin:$PATH"
 fi
@@ -44,8 +45,9 @@ if [ -z "$PROJECT" ]; then
   exec "$@"
 fi
 
+# shellcheck disable=SC2016
 exec doppler run -p "$PROJECT" -c "$CONFIG" -- \
-  sh -c '
+  bash -c '
     export SUPABASE_URL="${SUPABASE_URL:-${SERVER_URL:-}}" SENTRY_ACCESS_TOKEN="${SENTRY_AUTH_TOKEN:-}"
     args=()
     for arg in "$@"; do

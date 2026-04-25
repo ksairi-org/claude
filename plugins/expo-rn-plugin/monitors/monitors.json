@@ -9,6 +9,6 @@
     "name": "eas-active-builds",
     "command": "${CLAUDE_PLUGIN_ROOT}/scripts/poll-eas-build.sh",
     "description": "EAS active build status — reports in-progress builds and failures",
-    "when": "on-skill-invoke:scaffold"
+    "when": "always"
   }
 ]

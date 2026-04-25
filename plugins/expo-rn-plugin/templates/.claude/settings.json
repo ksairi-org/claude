@@ -49,6 +49,5 @@
       "WebFetch(domain:esm.sh)"
     ],
     "deny": []
-  },
-  "hooks": {}
+  }
 }

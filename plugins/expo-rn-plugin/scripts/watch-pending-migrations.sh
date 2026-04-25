@@ -10,7 +10,7 @@ check_pending() {
   # Ask Supabase CLI for migration status; filter for "not applied" rows
   local pending
   pending=$(supabase migration list 2>/dev/null \
-    | awk '/NOT APPLIED/ || /pending/ {print}' \
+    | awk 'tolower($0) ~ /not applied/ || /pending/ {print}' \
     | head -20) || return 0
 
   if [ -n "$pending" ]; then

@@ -11,7 +11,7 @@ Sync Figma design tokens to `src/theme/` mid-session.
    ```bash
    echo "FILE: $FIGMA_FILE_ID  TOKEN: ${FIGMA_API_KEY:+set}"
    ```
-   If either is missing, tell the user to run `yarn sync-env-vars dev` first.
+   If either is missing, tell the user to run `yarn sync-env-vars` first.
 
 2. Clear the sync cache so the TTL is not a blocker:
    ```bash
