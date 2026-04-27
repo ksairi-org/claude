@@ -182,7 +182,8 @@ Doppler stores all secrets (API keys, Supabase URLs, etc.) so nothing lives in `
 2. Create a project (e.g. `my-app`) with a `dev` config
 3. Add these secrets to the `dev` config:
    - `FIGMA_API_KEY`, `FIGMA_FILE_ID`
-   - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+   - `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+     (`EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` are derived automatically in `env.template.yaml` — never expose the service role key client-side)
    - `SUPABASE_ACCESS_TOKEN` — personal access token from [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens); used by the Supabase MCP server to manage projects (different from the service role key)
    - Optional: `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`
    - Optional: `STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
@@ -238,7 +239,7 @@ cd mcps/database-mcp-server && yarn install --immutable && yarn build
 ### Testing the plugin locally
 
 ```bash
-claude --plugin-dir .
+CLAUDE_PLUGIN_ROOT=$(pwd) claude --plugin-dir .
 ```
 
 ### Validate the manifest

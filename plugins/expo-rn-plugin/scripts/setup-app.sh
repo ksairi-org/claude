@@ -188,6 +188,9 @@ FIGMA_API_KEY={{ .FIGMA_API_KEY }}
 FIGMA_FILE_ID={{ .FIGMA_FILE_ID }}
 SUPABASE_URL={{ .SUPABASE_URL }}
 SUPABASE_SERVICE_ROLE_KEY={{ .SUPABASE_SERVICE_ROLE_KEY }}
+# EXPO_PUBLIC_ prefix makes these available to client-side JS (anon key only — never expose service role)
+EXPO_PUBLIC_SUPABASE_URL={{ .SUPABASE_URL }}
+EXPO_PUBLIC_SUPABASE_ANON_KEY={{ .SUPABASE_ANON_KEY }}
 # Supabase personal access token (account-level, from supabase.com/dashboard/account/tokens)
 # Used by the Supabase MCP server to manage projects. Different from the service role key.
 SUPABASE_ACCESS_TOKEN={{ .SUPABASE_ACCESS_TOKEN }}
@@ -253,7 +256,7 @@ if [ -f "$APP_ROOT/.doppler.yaml" ]; then
   echo "→ Doppler already configured (.doppler.yaml exists)"
 else
   echo "→ Doppler setup (links this directory to a Doppler project)"
-  echo "   Required secrets: FIGMA_API_KEY, FIGMA_FILE_ID, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ACCESS_TOKEN"
+  echo "   Required secrets: FIGMA_API_KEY, FIGMA_FILE_ID, SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ACCESS_TOKEN"
   echo "   Press Enter to run 'doppler setup', or Ctrl-C to skip and do it later."
   read -r
   doppler setup

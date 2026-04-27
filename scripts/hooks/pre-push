@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Rebuilds MCP server dist/ before push and stages any changes.
+# Rebuilds MCP server dist/ before push and commits any changes as a separate commit.
 set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
@@ -8,14 +8,14 @@ MCP_ROOT="$REPO_ROOT/plugins/expo-rn-plugin/mcps"
 build_server() {
   local dir="$MCP_ROOT/$1"
   echo "[pre-push] Building $1..."
-  (cd "$dir" && yarn install --prefer-offline --silent && yarn build 2>/dev/null)
+  (cd "$dir" && yarn install --immutable --silent && yarn build 2>/dev/null)
 }
 
 build_server "expo-mcp-server"
 build_server "database-mcp-server"
 
 if ! git diff --quiet "$MCP_ROOT"; then
-  echo "[pre-push] dist/ changed — staging and amending commit..."
+  echo "[pre-push] dist/ changed — committing as separate chore commit..."
   git add "$MCP_ROOT/expo-mcp-server/dist" "$MCP_ROOT/database-mcp-server/dist"
-  git commit --amend --no-edit --no-verify
+  git commit --no-verify -m "chore(expo-rn-plugin): rebuild MCP server dist"
 fi
