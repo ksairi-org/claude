@@ -183,6 +183,7 @@ Doppler stores all secrets (API keys, Supabase URLs, etc.) so nothing lives in `
 3. Add these secrets to the `dev` config:
    - `FIGMA_API_KEY`, `FIGMA_FILE_ID`
    - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+   - `SUPABASE_ACCESS_TOKEN` — personal access token from [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens); used by the Supabase MCP server to manage projects (different from the service role key)
    - Optional: `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`
    - Optional: `STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
 4. When `setup-app.sh` runs `doppler setup`, select your project and `dev` config

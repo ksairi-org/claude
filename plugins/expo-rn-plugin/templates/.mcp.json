@@ -46,6 +46,11 @@
       "command": "${CLAUDE_PLUGIN_ROOT}/bin/mcp-run.sh",
       "args": ["npx", "-y", "firebase-tools@latest", "experimental:mcp"]
     },
+    "supabase": {
+      "type": "stdio",
+      "command": "${CLAUDE_PLUGIN_ROOT}/bin/mcp-run.sh",
+      "args": ["npx", "-y", "@supabase/mcp-server-supabase@latest", "--access-token=${SUPABASE_ACCESS_TOKEN}"]
+    },
     "context7": {
       "type": "stdio",
       "command": "${CLAUDE_PLUGIN_ROOT}/bin/mcp-run.sh",
