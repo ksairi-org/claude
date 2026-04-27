@@ -7,7 +7,7 @@ MCP_ROOT="$REPO_ROOT/plugins/expo-rn-plugin/mcps"
 build_server() {
   local dir="$MCP_ROOT/$1"
   echo "[pre-push] Building $1..."
-  (cd "$dir" && yarn install --prefer-offline --silent && yarn build 2>/dev/null)
+  (cd "$dir" && yarn install --immutable --silent && yarn build 2>/dev/null)
 }
 
 build_server "expo-mcp-server"
