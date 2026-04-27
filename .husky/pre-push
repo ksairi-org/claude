@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+MCP_ROOT="$REPO_ROOT/plugins/expo-rn-plugin/mcps"
+
+build_server() {
+  local dir="$MCP_ROOT/$1"
+  echo "[pre-push] Building $1..."
+  (cd "$dir" && yarn install --prefer-offline --silent && yarn build 2>/dev/null)
+}
+
+build_server "expo-mcp-server"
+build_server "database-mcp-server"
+
+if ! git diff --quiet "$MCP_ROOT"; then
+  echo "[pre-push] dist/ changed — staging and amending commit..."
+  git add "$MCP_ROOT/expo-mcp-server/dist" "$MCP_ROOT/database-mcp-server/dist"
+  git commit --amend --no-edit --no-verify
+fi
+
+typecheck_server() {
+  local dir="$MCP_ROOT/$1"
+  echo "[pre-push] Type-checking $1..."
+  (cd "$dir" && yarn tsc --noEmit)
+}
+
+typecheck_server "expo-mcp-server"
+typecheck_server "database-mcp-server"

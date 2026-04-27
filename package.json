@@ -6,9 +6,16 @@
     "postinstall": "husky"
   },
   "packageManager": "yarn@4.9.2",
+  "lint-staged": {
+    "plugins/**/*.ts": "eslint"
+  },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
-    "husky": "^9.1.7"
+    "eslint": "^9",
+    "husky": "^9.1.7",
+    "lint-staged": "^15",
+    "typescript": "^5",
+    "typescript-eslint": "^8"
   }
 }
