@@ -1,16 +1,16 @@
 ---
-name: ksairi-libs
+name: libs
 description: Load the live @ksairi-org/* library reference from GitHub. Use before writing any hook, utility, component, or layout code — these packages replace many standard alternatives. Always fetches current state so new packages and API changes are reflected.
 ---
 
-The `@ksairi-org/*` libraries live at `https://github.com/ksairi-org/ksairi-libs`.
+The `@ksairi-org/*` libraries live at `https://github.com/ksairi-org/libs`.
 
 **Before writing any hook, utility, component, or layout code**, fetch the current package list and read the relevant source using the GitHub MCP:
 
 ## Step 1 — Discover available packages
 
 ```text
-mcp__github__get_file_contents(owner="ksairi-org", repo="ksairi-libs", path="packages")
+mcp__github__get_file_contents(owner="ksairi-org", repo="libs", path="packages")
 ```
 
 This returns the current list of packages. Do not assume you know what's there — packages are added over time.
@@ -20,7 +20,7 @@ This returns the current list of packages. Do not assume you know what's there �
 For each relevant package, read its `index.ts` (at the package root, not in `src/`):
 
 ```text
-mcp__github__get_file_contents(owner="ksairi-org", repo="ksairi-libs", path="packages/<name>/index.ts")
+mcp__github__get_file_contents(owner="ksairi-org", repo="libs", path="packages/<name>/index.ts")
 ```
 
 If the package has subdirectories (e.g. `animations/`, `scaling/`), list the directory first then read the files you need.

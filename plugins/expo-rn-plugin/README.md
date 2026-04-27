@@ -61,77 +61,77 @@ MCP servers ship with pre-built `dist/` — no build step required after install
 
 Skills with a matching project command (e.g. `/form`) can also be invoked via the short form — the command is a thin stub that delegates to the skill. Skills without a project command **must** use the full `/expo-rn-plugin:<name>` prefix.
 
-| Skill | Project command | Description |
-| --- | --- | --- |
-| `scaffold <table>` | `/scaffold` | Generate full CRUD (types, hooks, screens, routes, form) from a database table |
-| `form <feature>` | `/form` | Generate a zod schema, react-hook-form hook, and Tamagui form component |
-| `figma <url_or_node_id>` | `/figma` | Compare screen implementation against Figma design and fix discrepancies |
-| `sentry` | `/sentry` | Sentry error monitoring — setup, capture patterns, and MCP usage |
-| `stripe` | `/stripe` | Stripe payments — PaymentSheet flow, PCI rules, and MCP usage |
-| `preview` | `/preview` | Screenshot the running simulator, check device errors, and run tsc — use after every UI change |
-| `coding-standards` | — | Load project coding standards on demand (TypeScript, Tamagui, Zustand, Lingui) |
-| `analytics` | — | Load analytics standards — event naming, screen tracking, user identification, privacy rules (Firebase default; PostHog, Amplitude alternatives) |
-| `testing` | — | Write or fix component and hook tests using jest-expo and @testing-library/react-native |
-| `ksairi-libs` | — | *(optional)* Full reference for `@ksairi-org/*` libraries fetched live from GitHub. Load before writing any utility, hook, or layout code if your project uses these packages. |
+| Skill                    | Project command | Description                                                                                                                                                                    |
+| ------------------------ | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `scaffold <table>`       | `/scaffold`     | Generate full CRUD (types, hooks, screens, routes, form) from a database table                                                                                                 |
+| `form <feature>`         | `/form`         | Generate a zod schema, react-hook-form hook, and Tamagui form component                                                                                                        |
+| `figma <url_or_node_id>` | `/figma`        | Compare screen implementation against Figma design and fix discrepancies                                                                                                       |
+| `sentry`                 | `/sentry`       | Sentry error monitoring — setup, capture patterns, and MCP usage                                                                                                               |
+| `stripe`                 | `/stripe`       | Stripe payments — PaymentSheet flow, PCI rules, and MCP usage                                                                                                                  |
+| `preview`                | `/preview`      | Screenshot the running simulator, check device errors, and run tsc — use after every UI change                                                                                 |
+| `coding-standards`       | —               | Load project coding standards on demand (TypeScript, Tamagui, Zustand, Lingui)                                                                                                 |
+| `analytics`              | —               | Load analytics standards — event naming, screen tracking, user identification, privacy rules (Firebase default; PostHog, Amplitude alternatives)                               |
+| `testing`                | —               | Write or fix component and hook tests using jest-expo and @testing-library/react-native                                                                                        |
+| `libs`                   | —               | _(optional)_ Full reference for `@ksairi-org/*` libraries fetched live from GitHub. Load before writing any utility, hook, or layout code if your project uses these packages. |
 
 ### Project commands (standalone, no skill file)
 
 These commands are copied to `.claude/commands/` by `setup-app.sh` and are available as `/command-name` after setup. They are self-contained guides — no skill prefix needed.
 
-| Command | Description |
-| --- | --- |
-| `/auth <google\|apple\|email\|all>` | Wire up Supabase auth (Google, Apple, email sign-in) |
-| `/zustand` | Canonical Zustand store pattern (typed, MMKV-persisted) |
-| `/doppler <VAR=value>` | Add a new secret to Doppler and sync it to `.env` |
-| `/orval` | Regenerate OpenAPI hooks from the backend spec |
-| `/notifications` | Set up push notifications (expo-notifications + FCM) |
-| `/sync-tokens` | Pull latest design tokens from Figma mid-session |
-| `/preview [screen]` | Screenshot the running simulator and verify the UI visually |
+| Command                             | Description                                                 |
+| ----------------------------------- | ----------------------------------------------------------- |
+| `/auth <google\|apple\|email\|all>` | Wire up Supabase auth (Google, Apple, email sign-in)        |
+| `/zustand`                          | Canonical Zustand store pattern (typed, MMKV-persisted)     |
+| `/doppler <VAR=value>`              | Add a new secret to Doppler and sync it to `.env`           |
+| `/orval`                            | Regenerate OpenAPI hooks from the backend spec              |
+| `/notifications`                    | Set up push notifications (expo-notifications + FCM)        |
+| `/sync-tokens`                      | Pull latest design tokens from Figma mid-session            |
+| `/preview [screen]`                 | Screenshot the running simulator and verify the UI visually |
 
 Skill-backed stubs (thin wrappers — see Skills table above for full docs): `/form`, `/scaffold`, `/figma`, `/sentry`, `/stripe`.
 
 ### Agents (available in `/agents`)
 
-| Agent | Model | Description |
-| --- | --- | --- |
-| `expo-scaffolder` | Haiku | Scaffolding specialist — delegates heavy CRUD generation out of main context |
-| `database-specialist` | Sonnet | DB queries, migrations, RLS policies |
-| `i18n-reviewer` | Haiku | Audit Lingui catalogs for missing translations and hardcoded strings |
-| `auth-specialist` | Sonnet | Supabase auth flows, Google/Apple sign-in, token lifecycle |
-| `payment-specialist` | Sonnet | Stripe PaymentSheet, PCI compliance, webhooks |
+| Agent                 | Model  | Description                                                                  |
+| --------------------- | ------ | ---------------------------------------------------------------------------- |
+| `expo-scaffolder`     | Haiku  | Scaffolding specialist — delegates heavy CRUD generation out of main context |
+| `database-specialist` | Sonnet | DB queries, migrations, RLS policies                                         |
+| `i18n-reviewer`       | Haiku  | Audit Lingui catalogs for missing translations and hardcoded strings         |
+| `auth-specialist`     | Sonnet | Supabase auth flows, Google/Apple sign-in, token lifecycle                   |
+| `payment-specialist`  | Sonnet | Stripe PaymentSheet, PCI compliance, webhooks                                |
 
 ### MCP Servers
 
-| Server | Description |
-| --- | --- |
-| `expo` | React Native / Expo tools: config, routes, components, scaffolding, i18n, EAS, push notifications |
-| `database` | DB introspection, query generation, migration generation, RLS inspection |
-| `figma` | Figma design data and asset export |
-| `github` | GitHub PR/issue management |
-| `sentry` | Error monitoring |
-| `stripe` | Stripe API access |
-| `doppler` | Secret management |
-| `firebase` | Firebase services |
-| `context7` | Up-to-date library docs (React Native, Expo, etc.) |
+| Server     | Description                                                                                       |
+| ---------- | ------------------------------------------------------------------------------------------------- |
+| `expo`     | React Native / Expo tools: config, routes, components, scaffolding, i18n, EAS, push notifications |
+| `database` | DB introspection, query generation, migration generation, RLS inspection                          |
+| `figma`    | Figma design data and asset export                                                                |
+| `github`   | GitHub PR/issue management                                                                        |
+| `sentry`   | Error monitoring                                                                                  |
+| `stripe`   | Stripe API access                                                                                 |
+| `doppler`  | Secret management                                                                                 |
+| `firebase` | Firebase services                                                                                 |
+| `context7` | Up-to-date library docs (React Native, Expo, etc.)                                                |
 
 All servers that require secrets are wrapped via Doppler (`bin/mcp-run.sh`).
 
 ### Hooks (automatic)
 
-| Event | Hook | Effect |
-| --- | --- | --- |
-| `SessionStart` | `build-mcp-servers.sh` | Builds MCP servers if outdated (first run or plugin update) |
-| `SessionStart` | `figma/sync-figma-tokens.sh` | Syncs Tamagui design tokens from Figma if `FIGMA_FILE_ID` + `FIGMA_API_KEY` are set (no-op otherwise) |
-| `PreToolUse` (Write/Edit) | `guard-generated-files.sh` | Blocks edits to auto-generated files (`src/api/generated/`, `src/theme/`) — run the generator instead |
-| `PostToolUse` (Write/Edit) | `tsc-check.sh` | Runs `tsc --noEmit` after file edits in TypeScript projects |
-| `Stop` | `context-warning.sh` | Warns when context window ≥ 70% — prompts for `/compact` |
+| Event                      | Hook                         | Effect                                                                                                |
+| -------------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `SessionStart`             | `build-mcp-servers.sh`       | Builds MCP servers if outdated (first run or plugin update)                                           |
+| `SessionStart`             | `figma/sync-figma-tokens.sh` | Syncs Tamagui design tokens from Figma if `FIGMA_FILE_ID` + `FIGMA_API_KEY` are set (no-op otherwise) |
+| `PreToolUse` (Write/Edit)  | `guard-generated-files.sh`   | Blocks edits to auto-generated files (`src/api/generated/`, `src/theme/`) — run the generator instead |
+| `PostToolUse` (Write/Edit) | `tsc-check.sh`               | Runs `tsc --noEmit` after file edits in TypeScript projects                                           |
+| `Stop`                     | `context-warning.sh`         | Warns when context window ≥ 70% — prompts for `/compact`                                              |
 
 ### Monitors (automatic)
 
-| Monitor | When active | Effect |
-| --- | --- | --- |
-| `pending-migrations` | Always | Emits a warning when Supabase migration files are unapplied; re-checks every 5 min |
-| `eas-active-builds` | Always (no-ops when `eas` CLI absent or no active builds) | Polls EAS for in-progress builds and prints status updates every 60 s |
+| Monitor              | When active                                               | Effect                                                                             |
+| -------------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `pending-migrations` | Always                                                    | Emits a warning when Supabase migration files are unapplied; re-checks every 5 min |
+| `eas-active-builds`  | Always (no-ops when `eas` CLI absent or no active builds) | Polls EAS for in-progress builds and prints status updates every 60 s              |
 
 ### LSP
 
@@ -143,10 +143,10 @@ TypeScript Language Server (`typescript-language-server`) — provides go-to-def
 
 The plugin has two optional install-time config keys:
 
-| Key | Description |
-| --- | --- |
-| `doppler_project` | Your Doppler project name (e.g. `my-app`) |
-| `doppler_config` | Config to use (`dev` / `stg` / `prod`, default: `dev`) |
+| Key               | Description                                            |
+| ----------------- | ------------------------------------------------------ |
+| `doppler_project` | Your Doppler project name (e.g. `my-app`)              |
+| `doppler_config`  | Config to use (`dev` / `stg` / `prod`, default: `dev`) |
 
 You do not need to fill these in manually. `setup-app.sh` runs `doppler setup` interactively and writes both values to `mcp.config.json` automatically. The install-time prompts are a fallback only.
 
@@ -196,6 +196,7 @@ Keep your project's `CLAUDE.md` lean (under 80 lines). Move detailed standards t
 React Native / Expo app. For coding standards, run `/expo-rn-plugin:coding-standards`.
 
 ## Project Context
+
 - Expo Router for navigation
 - Tamagui for styling (`src/theme/`)
 - Lingui for i18n

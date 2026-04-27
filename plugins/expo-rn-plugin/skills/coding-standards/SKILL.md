@@ -5,7 +5,7 @@ description: Load coding standards and conventions for this React Native / Expo 
 
 Apply the following standards to all code in this project.
 
-> If this project uses `@ksairi-org/*` libraries, run `/expo-rn-plugin:ksairi-libs` before writing any utility, hook, or layout code — those packages replace many standard alternatives.
+> If this project uses `@ksairi-org/*` libraries, run `/expo-rn-plugin:libs` before writing any utility, hook, or layout code — those packages replace many standard alternatives.
 
 ## TypeScript
 
