@@ -299,20 +299,30 @@ if [ -z "$SENTRY_PROJECT_VAL" ] && [ -t 0 ]; then
 fi
 
 # Build replacement: bullet lines for found values + one remaining placeholder
-NL=$'\n'
-FILLED_LINES=""
 REMAINING_FIELDS="API base URL"
-[ -n "$FIGMA_FILE_ID_VAL" ] && FILLED_LINES="${FILLED_LINES}- Figma file ID: ${FIGMA_FILE_ID_VAL}${NL}"
-[ -n "$SUPABASE_REF" ]       && FILLED_LINES="${FILLED_LINES}- Supabase project ref: ${SUPABASE_REF}${NL}"
-[ -n "$SENTRY_PROJECT_VAL" ] && FILLED_LINES="${FILLED_LINES}- Sentry project: ${SENTRY_PROJECT_VAL}${NL}"
 [ -z "$FIGMA_FILE_ID_VAL" ] && REMAINING_FIELDS="${REMAINING_FIELDS}, Figma file ID"
 [ -z "$SUPABASE_REF" ]       && REMAINING_FIELDS="${REMAINING_FIELDS}, Supabase project ref"
 [ -z "$SENTRY_PROJECT_VAL" ] && REMAINING_FIELDS="${REMAINING_FIELDS}, Sentry project"
 
-REPLACEMENT="${FILLED_LINES}<!-- Fill in: ${REMAINING_FIELDS} -->"
-sed_inplace \
-  "s|<!-- Fill in: API base URL, Supabase project ref, Sentry project, Figma file ID -->|${REPLACEMENT}|" \
-  "$APP_ROOT/CLAUDE.md"
+FIGMA_FILE_ID_VAL="$FIGMA_FILE_ID_VAL" \
+SUPABASE_REF="$SUPABASE_REF" \
+SENTRY_PROJECT_VAL="$SENTRY_PROJECT_VAL" \
+REMAINING_FIELDS="$REMAINING_FIELDS" \
+node -e "
+  const fs = require('fs');
+  const { FIGMA_FILE_ID_VAL, SUPABASE_REF, SENTRY_PROJECT_VAL, REMAINING_FIELDS } = process.env;
+  const lines = [];
+  if (FIGMA_FILE_ID_VAL)   lines.push('- Figma file ID: ' + FIGMA_FILE_ID_VAL);
+  if (SUPABASE_REF)        lines.push('- Supabase project ref: ' + SUPABASE_REF);
+  if (SENTRY_PROJECT_VAL)  lines.push('- Sentry project: ' + SENTRY_PROJECT_VAL);
+  lines.push('<!-- Fill in: ' + REMAINING_FIELDS + ' -->');
+  const content = fs.readFileSync('$APP_ROOT/CLAUDE.md', 'utf8');
+  const updated = content.replace(
+    '<!-- Fill in: API base URL, Supabase project ref, Sentry project, Figma file ID -->',
+    lines.join('\n')
+  );
+  fs.writeFileSync('$APP_ROOT/CLAUDE.md', updated);
+"
 
 [ -n "$FIGMA_FILE_ID_VAL" ] && echo "→ Patched CLAUDE.md with Figma file ID"
 [ -n "$SUPABASE_REF" ]       && echo "→ Patched CLAUDE.md with Supabase project ref"

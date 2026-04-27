@@ -17,7 +17,7 @@ Claude Code plugin for React Native / Expo projects. Provides MCP servers, scaff
 > secrets to auto-fill CLAUDE.md. You need a Doppler account and a project created (with secrets
 > added) before running it — see [Doppler setup](#doppler-setup) below.
 >
-> **`CLAUDE_PLUGIN_ROOT`** is set automatically inside `claude` sessions. To run setup from a plain terminal (outside `claude`), use the full path: `bash /path/to/expo-rn-plugin/scripts/setup-app.sh`
+> **`CLAUDE_PLUGIN_ROOT`** is set automatically by the marketplace installer inside `claude` sessions. When testing from source with `--plugin-dir`, it is **not** set automatically — prefix the command as shown below.
 
 ```bash
 # 1. Create your Expo app
@@ -25,10 +25,13 @@ yarn create expo-app my-app && cd my-app
 
 # 2. Install the plugin
 claude plugin install expo-rn-plugin --scope project
-# Testing from source? Use: claude --plugin-dir /path/to/expo-rn-plugin
+# Testing from source? Set CLAUDE_PLUGIN_ROOT explicitly:
+#   CLAUDE_PLUGIN_ROOT=/path/to/expo-rn-plugin claude --plugin-dir /path/to/expo-rn-plugin
 
 # 3. Run one-time setup — interactive, takes ~2 min
 bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup-app.sh"
+# When testing from source (CLAUDE_PLUGIN_ROOT not set), run directly:
+#   bash /path/to/expo-rn-plugin/scripts/setup-app.sh
 # → Copies CLAUDE.md, mcp.config.json, .mcp.json, .claude/settings.json, .claude/commands/
 # → Auto-fills CLAUDE.md with project name from package.json
 # → Detects actual dir structure and writes mcp.config.json
