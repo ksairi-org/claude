@@ -307,19 +307,6 @@ if [ -t 0 ]; then
   echo ""
   echo "→ Optional services — add credentials now or skip (red MCP = not yet configured)"
 
-  # ── Doppler MCP (first — reuses the CLI auth token already on disk) ───────────
-  _doppler_token=$(doppler secrets get DOPPLER_TOKEN --plain 2>/dev/null || true)
-  if [ -z "$_doppler_token" ]; then
-    _doppler_token=$(doppler configure get token --scope "$APP_ROOT" --plain 2>/dev/null || true)
-    if [ -n "$_doppler_token" ]; then
-      _doppler_set DOPPLER_TOKEN "$_doppler_token"
-      echo "   ✓ Doppler MCP — token auto-detected from CLI auth and saved"
-    fi
-  else
-    echo "   ✓ Doppler MCP — token already configured"
-  fi
-  unset _doppler_token
-
   # ── Supabase management MCP ─────────────────────────────────────────────────
   _supa_token=$(doppler secrets get SUPABASE_ACCESS_TOKEN --plain 2>/dev/null || true)
   if [ -z "$_supa_token" ] && _ask "Supabase management MCP" "create projects, run migrations via Claude"; then

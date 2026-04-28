@@ -68,6 +68,14 @@ if [ -z "$PROJECT" ]; then
   exec "$@"
 fi
 
+# Inject DOPPLER_TOKEN directly from CLI auth so the Doppler MCP server works
+# without needing the token stored redundantly as a Doppler secret.
+if [ -z "${DOPPLER_TOKEN:-}" ] && command -v doppler &>/dev/null; then
+  _cli_token=$(doppler configure get token --scope "$PWD" --plain 2>/dev/null || true)
+  [ -n "$_cli_token" ] && export DOPPLER_TOKEN="$_cli_token"
+  unset _cli_token
+fi
+
 # shellcheck disable=SC2016
 exec doppler run -p "$PROJECT" -c "$CONFIG" -- \
   bash -c '
