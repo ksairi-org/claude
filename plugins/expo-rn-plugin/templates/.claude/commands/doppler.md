@@ -13,9 +13,9 @@ To add a new secret (`$ARGUMENTS`):
 
 2. Set in all Doppler configs:
    ```bash
-   doppler secrets set VAR_NAME="value" --project <project> --config dev
-   doppler secrets set VAR_NAME="value" --project <project> --config stg
-   doppler secrets set VAR_NAME="value" --project <project> --config prod
+   doppler secrets set VAR_NAME="value" --project mobile --config dev
+   doppler secrets set VAR_NAME="value" --project mobile --config stg
+   doppler secrets set VAR_NAME="value" --project mobile --config prd
    ```
 
 3. Sync to local `.env`:

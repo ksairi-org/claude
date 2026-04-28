@@ -34,7 +34,7 @@ Run `/expo-rn-plugin:coding-standards` to load full standards. Quick pointers:
 - **Payments:** Stripe `PaymentSheet` — `/expo-rn-plugin:stripe`
 - **Errors:** Sentry — `/expo-rn-plugin:sentry`
 - **API hooks:** orval-generated hooks in `src/api/generated/`
-- **Env vars:** Doppler
+- **Env vars:** Doppler — workspace = app name, project = `mobile` (web = `web`)
 - **Design:** Figma tokens in `src/theme/` — `/expo-rn-plugin:figma`
 - **Scaffold:** CRUD from DB table — `/expo-rn-plugin:scaffold`
 - **Push notifications:** FCM + expo-notifications
