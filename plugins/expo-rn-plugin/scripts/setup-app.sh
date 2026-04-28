@@ -251,32 +251,39 @@ else
 fi
 
 # ── 7. Doppler project link ───────────────────────────────────────────────────
+# Convention: workspace = app name, project = platform (mobile / web)
 echo ""
-if [ -f "$APP_ROOT/.doppler.yaml" ]; then
-  echo "→ Doppler already configured (.doppler.yaml exists)"
+_doppler_already_set=$(doppler configure get enclave.project --scope "$APP_ROOT" --plain 2>/dev/null || true)
+if [ "$_doppler_already_set" = "mobile" ]; then
+  echo "→ Doppler already configured (project=mobile)"
 else
-  echo "→ Doppler setup (links this directory to a Doppler project)"
+  echo "→ Creating Doppler project 'mobile'..."
+  echo "   Convention: workspace = app name ($(doppler me --json 2>/dev/null | node -e "const d=require('fs').readFileSync('/dev/stdin','utf8');try{console.log(JSON.parse(d).workplace.name)}catch{console.log('?')}")), project = platform"
   echo "   Required secrets: FIGMA_API_KEY, FIGMA_FILE_ID, SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ACCESS_TOKEN"
-  echo "   Press Enter to run 'doppler setup', or Ctrl-C to skip and do it later."
-  read -r
-  doppler setup
+
+  # Create the project (no-op if it already exists)
+  doppler projects create mobile 2>/dev/null || true
+
+  # Scope this directory to mobile/dev
+  doppler configure set enclave.project mobile --scope "$APP_ROOT"
+  doppler configure set enclave.config dev --scope "$APP_ROOT"
+  echo "   Linked: $APP_ROOT → mobile/dev"
 fi
+unset _doppler_already_set
 
 # ── 7b. Write Doppler project/config back to mcp.config.json ─────────────────
-if [ -f "$APP_ROOT/.doppler.yaml" ]; then
-  _dp=$(grep "project:" "$APP_ROOT/.doppler.yaml" | head -1 | sed 's/.*project:[[:space:]]*//' | tr -d '[:space:]')
-  _dc=$(grep "config:" "$APP_ROOT/.doppler.yaml" | head -1 | sed 's/.*config:[[:space:]]*//' | tr -d '[:space:]')
-  if [ -n "$_dp" ]; then
-    node -e "
-      const fs = require('fs');
-      const cfg = JSON.parse(fs.readFileSync('$APP_ROOT/mcp.config.json', 'utf8'));
-      cfg.doppler = { project: '${_dp}', config: '${_dc:-dev}' };
-      fs.writeFileSync('$APP_ROOT/mcp.config.json', JSON.stringify(cfg, null, 2) + '\n');
-    "
-    echo "→ Wrote doppler.project=${_dp}, doppler.config=${_dc:-dev} to mcp.config.json"
-  fi
-  unset _dp _dc
+_dp=$(doppler configure get enclave.project --scope "$APP_ROOT" --plain 2>/dev/null || true)
+_dc=$(doppler configure get enclave.config  --scope "$APP_ROOT" --plain 2>/dev/null || true)
+if [ -n "$_dp" ]; then
+  node -e "
+    const fs = require('fs');
+    const cfg = JSON.parse(fs.readFileSync('$APP_ROOT/mcp.config.json', 'utf8'));
+    cfg.doppler = { project: '${_dp}', config: '${_dc:-dev}' };
+    fs.writeFileSync('$APP_ROOT/mcp.config.json', JSON.stringify(cfg, null, 2) + '\n');
+  "
+  echo "→ Wrote doppler.project=${_dp}, doppler.config=${_dc:-dev} to mcp.config.json"
 fi
+unset _dp _dc
 
 # ── 8. Patch CLAUDE.md with values from Doppler ──────────────────────────────
 # Gather all values first, then do one replacement so placeholder variants

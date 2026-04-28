@@ -19,3 +19,12 @@ if ! git diff --quiet "$MCP_ROOT"; then
   git add "$MCP_ROOT/expo-mcp-server/dist" "$MCP_ROOT/database-mcp-server/dist"
   git commit --no-verify -m "chore(expo-rn-plugin): rebuild MCP server dist"
 fi
+
+typecheck_server() {
+  local dir="$MCP_ROOT/$1"
+  echo "[pre-push] Type-checking $1..."
+  (cd "$dir" && yarn tsc --noEmit)
+}
+
+typecheck_server "expo-mcp-server"
+typecheck_server "database-mcp-server"

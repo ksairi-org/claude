@@ -14,9 +14,9 @@ build_server "expo-mcp-server"
 build_server "database-mcp-server"
 
 if ! git diff --quiet "$MCP_ROOT"; then
-  echo "[pre-push] dist/ changed — staging and amending commit..."
+  echo "[pre-push] dist/ changed — committing as separate chore commit..."
   git add "$MCP_ROOT/expo-mcp-server/dist" "$MCP_ROOT/database-mcp-server/dist"
-  git commit --amend --no-edit --no-verify
+  git commit --no-verify -m "chore(expo-rn-plugin): rebuild MCP server dist"
 fi
 
 typecheck_server() {
