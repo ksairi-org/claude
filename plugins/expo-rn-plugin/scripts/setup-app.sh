@@ -285,7 +285,111 @@ if [ -n "$_dp" ]; then
 fi
 unset _dp _dc
 
-# ── 8. Patch CLAUDE.md with values from Doppler ──────────────────────────────
+# ── 8. Optional service wizard ────────────────────────────────────────────────
+# Ask which optional services the user wants. For each yes: store credentials
+# in Doppler and add the MCP server to .mcp.json. Skipped services are left
+# out entirely — no red servers, no silent failures.
+
+_mcp_file="$APP_ROOT/.mcp.json"
+
+_ask() {
+  # _ask "Label" "hint shown in parens"
+  local label="$1" hint="${2:-}"
+  local yn
+  [ -n "$hint" ] && printf "   %s (%s)? [y/N] " "$label" "$hint" || printf "   %s? [y/N] " "$label"
+  read -r yn
+  [[ "$yn" =~ ^[Yy]$ ]]
+}
+
+_doppler_set() {
+  doppler secrets set "$1=$2" --silent 2>/dev/null || true
+}
+
+_add_mcp() {
+  # _add_mcp <name> <json-object-string>
+  local name="$1" obj="$2"
+  node -e "
+    const fs = require('fs');
+    const mcp = JSON.parse(fs.readFileSync('$_mcp_file', 'utf8'));
+    mcp.mcpServers['$name'] = $obj;
+    fs.writeFileSync('$_mcp_file', JSON.stringify(mcp, null, 2) + '\n');
+  "
+}
+
+if [ -t 0 ]; then
+  echo ""
+  echo "→ Optional services — press Enter to skip any"
+
+  # ── Supabase management MCP ─────────────────────────────────────────────────
+  _supa_token=$(doppler secrets get SUPABASE_ACCESS_TOKEN --plain 2>/dev/null || true)
+  if [ -z "$_supa_token" ] && _ask "Supabase management MCP" "create projects, run migrations via Claude"; then
+    read -rp "   Personal access token (supabase.com/dashboard/account/tokens): " _supa_token
+  fi
+  if [ -n "$_supa_token" ]; then
+    _doppler_set SUPABASE_ACCESS_TOKEN "$_supa_token"
+    _add_mcp supabase '{"type":"stdio","command":"${CLAUDE_PLUGIN_ROOT}/bin/mcp-run.sh","args":["npx","-y","@supabase/mcp-server-supabase@latest","--access-token=${SUPABASE_ACCESS_TOKEN}"]}'
+    echo "   ✓ Supabase management MCP enabled"
+  fi
+  unset _supa_token
+
+  # ── Figma ────────────────────────────────────────────────────────────────────
+  _figma_key=$(doppler secrets get FIGMA_API_KEY --plain 2>/dev/null || true)
+  if [ -z "$_figma_key" ] && _ask "Figma MCP" "sync design tokens, inspect components"; then
+    read -rp "   Figma API key (figma.com/settings > Personal access tokens): " _figma_key
+    read -rp "   Figma file ID (from your Figma file URL): " _figma_file
+    [ -n "$_figma_file" ] && _doppler_set FIGMA_FILE_ID "$_figma_file"
+  fi
+  if [ -n "$_figma_key" ]; then
+    _doppler_set FIGMA_API_KEY "$_figma_key"
+    _add_mcp figma '{"type":"stdio","command":"${CLAUDE_PLUGIN_ROOT}/bin/mcp-run.sh","args":["npx","-y","figma-developer-mcp","--stdio"]}'
+    echo "   ✓ Figma MCP enabled"
+  fi
+  unset _figma_key _figma_file
+
+  # ── Sentry ───────────────────────────────────────────────────────────────────
+  _sentry_org=$(doppler secrets get SENTRY_ORG --plain 2>/dev/null || true)
+  if [ -f "$APP_ROOT/sentry.properties" ]; then
+    _sentry_proj=$(grep "^defaults.project=" "$APP_ROOT/sentry.properties" | cut -d= -f2 || true)
+  fi
+  _sentry_proj="${_sentry_proj:-$(doppler secrets get SENTRY_PROJECT --plain 2>/dev/null || true)}"
+  if [ -z "$_sentry_org" ] && _ask "Sentry MCP" "query errors and performance data via Claude"; then
+    read -rp "   Sentry org slug: " _sentry_org
+    read -rp "   Sentry project slug: " _sentry_proj
+    read -rp "   Sentry auth token (sentry.io/settings/account/api/auth-tokens): " _sentry_token
+    read -rp "   Sentry DSN (from project settings): " _sentry_dsn
+    [ -n "$_sentry_token" ] && _doppler_set SENTRY_AUTH_TOKEN "$_sentry_token"
+    [ -n "$_sentry_dsn" ]   && _doppler_set SENTRY_DSN "$_sentry_dsn"
+  fi
+  if [ -n "$_sentry_org" ]; then
+    _doppler_set SENTRY_ORG "$_sentry_org"
+    [ -n "$_sentry_proj" ] && _doppler_set SENTRY_PROJECT "$_sentry_proj"
+    _add_mcp sentry "{\"type\":\"stdio\",\"command\":\"\${CLAUDE_PLUGIN_ROOT}/bin/mcp-run.sh\",\"args\":[\"npx\",\"-y\",\"@sentry/mcp-server@latest\",\"--organization-slug=${_sentry_org}\"]}"
+    echo "   ✓ Sentry MCP enabled"
+  fi
+  unset _sentry_org _sentry_proj _sentry_token _sentry_dsn
+
+  # ── Stripe ───────────────────────────────────────────────────────────────────
+  _stripe_key=$(doppler secrets get STRIPE_SECRET_KEY --plain 2>/dev/null || true)
+  if [ -z "$_stripe_key" ] && _ask "Stripe MCP" "manage products, prices, customers via Claude"; then
+    read -rp "   Stripe secret key (dashboard.stripe.com/apikeys): " _stripe_key
+    read -rp "   Stripe publishable key: " _stripe_pub
+    [ -n "$_stripe_pub" ] && _doppler_set STRIPE_PUBLISHABLE_KEY "$_stripe_pub"
+  fi
+  if [ -n "$_stripe_key" ]; then
+    _doppler_set STRIPE_SECRET_KEY "$_stripe_key"
+    _add_mcp stripe '{"type":"stdio","command":"${CLAUDE_PLUGIN_ROOT}/bin/mcp-run.sh","args":["npx","-y","@stripe/mcp","--tools=all"]}'
+    echo "   ✓ Stripe MCP enabled"
+  fi
+  unset _stripe_key _stripe_pub
+
+  # ── Firebase ─────────────────────────────────────────────────────────────────
+  if _ask "Firebase MCP" "manage Firestore, Auth, Storage via Claude"; then
+    _add_mcp firebase '{"type":"stdio","command":"${CLAUDE_PLUGIN_ROOT}/bin/mcp-run.sh","args":["npx","-y","firebase-tools@latest","experimental:mcp"]}'
+    echo "   ✓ Firebase MCP enabled (run 'firebase login' if not already authenticated)"
+  fi
+fi
+
+# ── 9. Patch CLAUDE.md with values from Doppler ──────────────────────────────
 # Gather all values first, then do one replacement so placeholder variants
 # can't cause mismatches (e.g. if Figma is absent the original placeholder
 # still contains ", Figma file ID" — chained seds would silently no-op).
@@ -298,17 +402,9 @@ if [ -n "$SUPABASE_URL_VAL" ]; then
   SUPABASE_REF=$(echo "$SUPABASE_URL_VAL" | sed 's|https://||;s|\.supabase\.co.*||')
 fi
 
-SENTRY_PROJECT_VAL=""
-if [ -f "$APP_ROOT/sentry.properties" ]; then
+SENTRY_PROJECT_VAL=$(doppler secrets get SENTRY_PROJECT --plain 2>/dev/null || true)
+if [ -z "$SENTRY_PROJECT_VAL" ] && [ -f "$APP_ROOT/sentry.properties" ]; then
   SENTRY_PROJECT_VAL=$(grep "^defaults.project=" "$APP_ROOT/sentry.properties" | cut -d= -f2 || true)
-fi
-if [ -z "$SENTRY_PROJECT_VAL" ]; then
-  SENTRY_PROJECT_VAL=$(doppler secrets get SENTRY_PROJECT --plain 2>/dev/null || true)
-fi
-if [ -z "$SENTRY_PROJECT_VAL" ] && [ -t 0 ]; then
-  read -rp "   Sentry project slug (press Enter to skip): " _sentry_input
-  [ -n "$_sentry_input" ] && SENTRY_PROJECT_VAL="$_sentry_input"
-  unset _sentry_input
 fi
 
 # Build replacement: bullet lines for found values + one remaining placeholder
@@ -348,7 +444,6 @@ if [ "$REMAINING_FIELDS" = "API base URL" ]; then
   echo "  1. Edit CLAUDE.md — fill in: API base URL (only remaining field)"
 else
   echo "  1. Edit CLAUDE.md — fill in: ${REMAINING_FIELDS}"
-  echo "     (run 'doppler setup' then re-run this script to auto-fill more)"
 fi
 echo "  2. Review mcp.config.json — paths were auto-detected, adjust if needed"
 echo "  3. Start Claude: claude"
