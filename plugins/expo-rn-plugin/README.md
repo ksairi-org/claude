@@ -13,13 +13,20 @@ Claude Code plugin for React Native / Expo projects. Provides MCP servers, scaff
 
 ## New app quickstart
 
-> **Before step 3:** `setup-app.sh` runs `doppler setup` interactively and uses your Doppler
-> secrets to auto-fill CLAUDE.md. You need a Doppler account and a project created (with secrets
-> added) before running it — see [Doppler setup](#doppler-setup) below.
+> **Before step 3:** you need a [Doppler](https://doppler.com) account and workspace. If you haven't set it up yet:
+>
+> 1. Create a free account and workspace at [doppler.com](https://doppler.com)
+> 2. Run `doppler login` in your project folder — this authenticates the CLI and links the folder to your workspace
+>
+> `setup-app.sh` then runs the service wizard interactively to collect credentials for each optional MCP (Doppler, Supabase, Figma, Sentry, Stripe, Firebase). Skip any you don't need yet — their MCP servers will show red until configured, which is intentional. Re-run `setup-app.sh` any time to fill in more.
 >
 > **`CLAUDE_PLUGIN_ROOT`** is set automatically by the marketplace installer inside `claude` sessions. When testing from source with `--plugin-dir`, it is **not** set automatically — prefix the command as shown below.
 
 ```bash
+# 0. Pre-requisites (one-time, outside the project)
+#    - Create a Doppler account + workspace at doppler.com
+#    - doppler login   ← authenticate the CLI in your project folder
+
 # 1. Create your Expo app
 yarn create expo-app my-app && cd my-app
 
