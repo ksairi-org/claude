@@ -41,6 +41,14 @@ fi
 
 CONFIG="${CONFIG:-dev}"
 
+# Last-resort fallback: ask the Doppler CLI for the project/config scoped to $PWD.
+# This kicks in when mcp.config.json has no doppler block but the user has already
+# run `doppler setup` — avoids servers going red just because setup was run late.
+if [ -z "$PROJECT" ] && command -v doppler &>/dev/null; then
+  PROJECT=$(doppler configure get project --scope "$PWD" --plain 2>/dev/null || echo "")
+  CONFIG=$(doppler configure get config --scope "$PWD" --plain 2>/dev/null || echo "${CONFIG:-dev}")
+fi
+
 if [ -z "$PROJECT" ]; then
   exec "$@"
 fi
