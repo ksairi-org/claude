@@ -34,16 +34,31 @@ fi
 PROJECT="${CLAUDE_PLUGIN_OPTION_DOPPLER_PROJECT:-}"
 CONFIG="${CLAUDE_PLUGIN_OPTION_DOPPLER_CONFIG:-}"
 
-if [ -z "$PROJECT" ] && [ -f "$PWD/mcp.config.json" ]; then
-  PROJECT=$(python3 -c "import json; d=json.load(open('$PWD/mcp.config.json')); print(d.get('doppler',{}).get('project',''))" 2>/dev/null || echo "")
-  CONFIG=$(python3 -c "import json; d=json.load(open('$PWD/mcp.config.json')); print(d.get('doppler',{}).get('config','dev'))" 2>/dev/null || echo "")
+# Walk up from $PWD to find the nearest mcp.config.json — Claude may start MCP
+# processes with a CWD that differs from the project root.
+_find_config() {
+  local dir="$PWD"
+  while [ "$dir" != "/" ]; do
+    [ -f "$dir/mcp.config.json" ] && echo "$dir/mcp.config.json" && return
+    dir="$(dirname "$dir")"
+  done
+}
+
+if [ -z "$PROJECT" ]; then
+  _cfg=$(_find_config)
+  if [ -n "$_cfg" ]; then
+    PROJECT=$(python3 -c "import json; d=json.load(open('$_cfg')); print(d.get('doppler',{}).get('project',''))" 2>/dev/null || echo "")
+    CONFIG=$(python3 -c "import json; d=json.load(open('$_cfg')); print(d.get('doppler',{}).get('config','dev'))" 2>/dev/null || echo "")
+    # Also switch to that directory so relative paths in the server work correctly
+    cd "$(dirname "$_cfg")"
+  fi
 fi
 
 CONFIG="${CONFIG:-dev}"
 
 # Last-resort fallback: ask the Doppler CLI for the project/config scoped to $PWD.
 # This kicks in when mcp.config.json has no doppler block but the user has already
-# run `doppler setup` — avoids servers going red just because setup was run late.
+# run `doppler setup`.
 if [ -z "$PROJECT" ] && command -v doppler &>/dev/null; then
   PROJECT=$(doppler configure get project --scope "$PWD" --plain 2>/dev/null || echo "")
   CONFIG=$(doppler configure get config --scope "$PWD" --plain 2>/dev/null || echo "${CONFIG:-dev}")
