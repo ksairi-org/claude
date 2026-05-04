@@ -5,9 +5,11 @@
 - `any`, `as` casts, `eslint-disable` — fix at source
 - Raw hex/rgba in Tamagui props — use `$token` references only
 - `StyleSheet.create()` — use Tamagui `styled()`
+- Inline `style={{…}}` props on non-Tamagui components — wrap with `styled()` from `@tamagui/core` and use token props on the wrapper
 - `FlatList` — use `FlashList` with `estimatedItemSize`
 - `TouchableOpacity` / `Pressable` — use your team's touchable wrapper
 - Raw `expo-image` — use your team's image wrapper (if any)
+- `react-native` UI primitives when a Tamagui or `@ksairi-org/` equivalent exists — priority: tamagui → `@ksairi-org/` → project-local → `react-native` → third party
 - `KeyboardAvoidingView` — use `react-native-keyboard-controller`
 - `Alert.alert` for non-destructive feedback — use `burnt.toast()`
 - `npm` / `npx` / `pnpm` — always `yarn`
@@ -16,6 +18,12 @@
 - Handle raw card data — use Stripe `PaymentSheet` only
 - Log PII in Sentry tags or breadcrumbs
 - Log PII or payment data in analytics events — use opaque internal IDs only
+- Put logic in route files — route files are thin wrappers (`export { default } from '@screens/FooScreen'`); all UI lives in `src/screens/`
+- Network calls in Zustand stores — server state → react-query hooks in `src/hooks/`; Zustand is for UI/local state + MMKV persistence only
+- Raw `supabase.auth.*` in screens or stores — encapsulate in a dedicated auth hook
+- Use `src/lib/` — the correct directory is `src/services/` (with `analytics/`, `firebase-messaging/`, `supabase/` sub-modules)
+- Name stores directory `src/store/` (singular) — always `src/stores/` (plural) with `utils.ts` for `createZustandMmkvStorage`
+- Leave Expo boilerplate directories at root — `components/`, `hooks/`, `constants/` at root are Expo scaffolding; clean them up or move to `src/`
 
 ## Always do
 
@@ -41,15 +49,20 @@ Run `/expo-rn-plugin:coding-standards` to load full standards. Quick pointers:
 - **Tests:** jest-expo + React Testing Library + `renderWithProviders` — `/expo-rn-plugin:testing`
 - **Analytics:** Firebase Analytics (default), PostHog, Amplitude — `/expo-rn-plugin:analytics`
 
+## Reference implementation
+
+When a pattern isn't covered here, check [ksairi-org/virtual-wallet](https://github.com/ksairi-org/virtual-wallet) — the canonical production app built on this stack.
+
 ## Project context
 
-<!-- Fill in: API base URL, Supabase projects, Sentry project, Figma file ID -->
-<!-- Supabase naming: {project}-dev · {project}-stg · {project}-prd -->
-- api: `https://api.your-domain.com`
-- Supabase: `{project}-dev` (dev) · `{project}-stg` (stg) · `{project}-prd` (prd)
+<!-- Fill in: API base URL, Supabase project ref, Sentry project, Figma file ID -->
 
 - DB schema: `api` (not `public`)
-- Routes: `app/` via expo-router
-- Components: `src/components/`
+- **Routes:** `app/` (expo-router) — route files are 1-line wrappers; screens in `src/screens/`
+- **Components:** atomic design — `src/components/{atoms,molecules,organisms}/`
+- **Services:** `src/services/{supabase,analytics,firebase-messaging}/` — never `src/lib/`
+- **Stores:** `src/stores/` (plural) + `utils.ts` with `createZustandMmkvStorage` — UI state only
+- **i18n:** full module at `src/i18n/` — root `lingui.config.ts` is a thin re-export only
+- **Theme:** Figma tokens in `src/theme/{themes,tamagui.config}/` — root `tamagui.config.ts` is a thin re-export only
 - Storage: `expo-secure-store` (tokens) · MMKV/Zustand (UI) · AsyncStorage (cache)
 - OTA: `eas update --channel production --message "…"`

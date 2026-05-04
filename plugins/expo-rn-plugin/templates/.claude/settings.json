@@ -1,4 +1,7 @@
 {
+  "enabledPlugins": {
+    "expo-rn-plugin@ksairi": true
+  },
   "permissions": {
     "allow": [
       "Bash(tsc:*)",

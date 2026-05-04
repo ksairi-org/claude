@@ -1,0 +1,56 @@
+name: Expo Android Deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment (stg, prod)'
+        required: true
+        type: string
+      node-version:
+        required: true
+        type: string
+      yarn-version:
+        required: false
+        type: string
+        default: '4.9.2'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Yarn
+        run: |
+          corepack prepare yarn@${{ inputs.yarn-version }} --activate
+          yarn --version
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Setup Gradle properties
+        run: |
+          mkdir -p ~/.gradle
+          echo "org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=2048m" >> ~/.gradle/gradle.properties
+
+      - name: Install Doppler CLI
+        run: |
+          curl -Ls https://cli.doppler.com/install.sh | sudo sh
+          doppler --version
+
+      - name: Build and Deploy to Google Play Store
+        run: ENV=${{ inputs.environment }} yarn deploy-store-android
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}

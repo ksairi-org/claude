@@ -1,0 +1,102 @@
+name: Expo iOS Deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment (stg, prod)'
+        required: true
+        type: string
+      node-version:
+        required: true
+        type: string
+      yarn-version:
+        required: false
+        type: string
+        default: '4.9.2'
+      cocoapods-version:
+        required: false
+        type: string
+        default: '1.16.2'
+      macos-runner-image:
+        required: false
+        type: string
+        default: 'macos-14'
+      xcode-version:
+        required: false
+        type: string
+        default: '16.2'
+        description: 'Only > 15.1'
+
+jobs:
+  deploy:
+    runs-on: ${{ inputs.macos-runner-image }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Yarn
+        run: |
+          corepack prepare yarn@${{ inputs.yarn-version }} --activate
+          yarn --version
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Free-up Space
+        run: |
+          df -hI /dev/disk3s1s1
+          {
+            xcrun simctl delete all
+            sudo rm -rf ~/Library/Developer/CoreSimulator/Caches/*
+            sudo rm -rf ~/Library/Developer/CoreSimulator/Devices/*
+          } || {
+            echo "Cleaning devices and cache failed. Continuing the execution"
+          }
+          {
+            sudo rm -rf ~/Library/Developer/Xcode/DerivedData
+            sudo rm -rf /Applications/Xcode_{14.3.1,15.0.1,15.1}.app
+          } || {
+            echo "Cleaning unused xcode version failed. Continuing the execution"
+          }
+          df -hI /dev/disk3s1s1
+
+      - name: Xcode Select Version
+        uses: mobiledevops/xcode-select-version-action@v1
+        with:
+          xcode-select-version: ${{ inputs.xcode-version }}
+
+      - name: Set up ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Install Fastlane
+        run: gem install fastlane
+
+      - name: Install Specific xcodeproj Gem Version
+        run: |
+          sudo gem uninstall xcodeproj -x --ignore-dependencies || true
+          sudo gem install xcodeproj -v 1.25.1
+
+      - name: Setup cocoapods
+        run: gem install cocoapods -v ${{ inputs.cocoapods-version }}
+
+      - name: Install Doppler CLI
+        run: |
+          curl -Ls https://cli.doppler.com/install.sh | sudo sh
+          doppler --version
+
+      - name: Build and Deploy to Apple App Store
+        run: ENV=${{ inputs.environment }} yarn deploy-store-ios
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}

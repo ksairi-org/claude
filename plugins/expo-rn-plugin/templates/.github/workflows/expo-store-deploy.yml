@@ -1,0 +1,37 @@
+name: Build and Deploy to App Stores
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment (stg, prod)'
+        required: true
+        type: choice
+        options:
+          - stg
+          - prod
+      platform:
+        description: 'Platform to build and deploy (ios, android, all)'
+        required: true
+        type: choice
+        options:
+          - ios
+          - android
+          - all
+
+jobs:
+  deploy-android:
+    if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
+    uses: ./.github/workflows/expo-android-deploy.yml
+    secrets: inherit
+    with:
+      environment: ${{ inputs.environment }}
+      node-version: '23'
+
+  deploy-ios:
+    if: ${{ inputs.platform == 'ios' || inputs.platform == 'all' }}
+    uses: ./.github/workflows/expo-ios-deploy.yml
+    secrets: inherit
+    with:
+      environment: ${{ inputs.environment }}
+      node-version: '23'

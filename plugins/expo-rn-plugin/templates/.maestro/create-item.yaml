@@ -1,0 +1,13 @@
+appId: com.example.app
+---
+# Assumes user is already logged in via login.yaml
+- launchApp
+- tapOn:
+    text: "New"
+- assertVisible: "Create"
+- tapOn:
+    text: "Title"
+- inputText: "My first item"
+- tapOn:
+    text: "Save"
+- assertVisible: "My first item"
