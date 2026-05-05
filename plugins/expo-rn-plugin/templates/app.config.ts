@@ -30,6 +30,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       foregroundImage: "./assets/images/adaptive-icon.png",
       backgroundColor: "#ffffff",
     },
+    edgeToEdgeEnabled: true,
+    predictiveBackGestureEnabled: false,
     googleServicesFile: process.env.GOOGLE_SERVICES_JSON_PATH,
     permissions: ["android.permission.POST_NOTIFICATIONS"],
   },
@@ -50,15 +52,26 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       "expo-build-properties",
       {
+        android: { minSdkVersion: 24, kotlinVersion: "2.0.21" },
         ios: {
           useFrameworks: "static",
           forceStaticLinking: ["RNFBApp", "RNFBAnalytics", "RNFBMessaging"],
         },
       },
     ],
+    [
+      "expo-splash-screen",
+      {
+        image: "./assets/images/icon.png",
+        imageWidth: 200,
+        resizeMode: "contain",
+        backgroundColor: "#ffffff",
+      },
+    ],
     "expo-secure-store",
   ],
   experiments: {
     typedRoutes: true,
+    reactCompiler: true,
   },
 });
