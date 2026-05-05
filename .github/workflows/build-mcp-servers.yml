@@ -10,6 +10,9 @@ on:
       - plugins/expo-rn-plugin/mcps/**
       - .github/workflows/build-mcp-servers.yml
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,14 +23,14 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
 
       - name: Setup Yarn Berry
         run: |
-          npm install -g yarn@4.9.2
-          echo "$(npm config get prefix)/bin" >> $GITHUB_PATH
+          corepack enable
+          corepack prepare yarn@4.9.2 --activate
 
       - name: Install & build ${{ matrix.server }}
         working-directory: plugins/expo-rn-plugin/mcps/${{ matrix.server }}
