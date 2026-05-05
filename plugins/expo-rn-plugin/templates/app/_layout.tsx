@@ -1,4 +1,3 @@
-import '@tamagui/native/setup-zeego'
 import { Slot } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useReactQueryDevTools } from "@dev-plugins/react-query";
