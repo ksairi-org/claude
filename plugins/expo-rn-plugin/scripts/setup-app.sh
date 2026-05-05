@@ -282,8 +282,9 @@ node -e "
   add('sync-env-vars',
     'doppler secrets substitute env.template.yaml --output .env --project mobile --config \${ENV:-stg}');
   // doppler run injects FIGMA_API_KEY (Doppler key name); the tool expects FIGMA_TOKEN, so remap inline
+  // Skip gracefully when vars are unset (Figma integration is optional)
   add('sync-design-tokens',
-    'doppler run -- bash -c \"FIGMA_TOKEN=\$FIGMA_API_KEY figma-tamagui-sync --fileId=\$FIGMA_FILE_ID --out=./src/theme\"');
+    'doppler run -- bash -c \'if [ -z "\${FIGMA_API_KEY:-}" ] || [ -z "\${FIGMA_FILE_ID:-}" ]; then echo "Skipping design token sync (no Figma project configured)"; else FIGMA_TOKEN=\$FIGMA_API_KEY figma-tamagui-sync --fileId=\$FIGMA_FILE_ID --out=./src/theme; fi\'');
   add('pre-start', 'yarn sync-env-vars && yarn sync-design-tokens && yarn generate:open-api-hooks');
   add('start:expo',
     '[ \${ENV:-stg} == \\'prd\\' ] && yarn expo start --scheme ' + slug +
@@ -351,6 +352,7 @@ node -e "
   // Migrate positional $1/$2 args → ENV var + inlined commands (Yarn Berry shell doesn't support $1/$2 between yarn scripts)
   const newScripts = {
     'sync-env-vars': 'doppler secrets substitute env.template.yaml --output .env --project mobile --config \${ENV:-stg}',
+    'sync-design-tokens': 'doppler run -- bash -c \'if [ -z "\${FIGMA_API_KEY:-}" ] || [ -z "\${FIGMA_FILE_ID:-}" ]; then echo "Skipping design token sync (no Figma project configured)"; else FIGMA_TOKEN=\$FIGMA_API_KEY figma-tamagui-sync --fileId=\$FIGMA_FILE_ID --out=./src/theme; fi\'',
     'pre-start': 'yarn sync-env-vars && yarn sync-design-tokens && yarn generate:open-api-hooks',
     'build': 'yarn sync-env-vars && yarn generate:open-api-hooks',
     'pre-build': 'yarn i18n && yarn build',
