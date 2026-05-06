@@ -524,6 +524,9 @@ GOOGLE_SERVICES_JSON_PATH={{ .GOOGLE_SERVICES_JSON_PATH }}
 # Optional: Stripe — uncomment and add secrets in Doppler
 # EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY={{ .STRIPE_PUBLISHABLE_KEY }}
 
+# Optional: RevenueCat — single key for both iOS and Android (no platform split)
+# EXPO_PUBLIC_RC_API_KEY={{ .REVENUECAT_API_KEY }}
+
 # Optional: Firebase notifications — uncomment and add secrets in Doppler
 # FIREBASE_SERVER_KEY={{ .FIREBASE_SERVER_KEY }}
 YAML
