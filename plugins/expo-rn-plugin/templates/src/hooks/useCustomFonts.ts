@@ -1,17 +1,10 @@
-import { useFonts } from "expo-font";
+import { useFonts } from 'expo-font'
+import { fontAssets } from '@theme'
 
-const useCustomFonts = () => {
-  const [fontsLoaded, error] = useFonts({
-    "Inter-SemiBold": require("../../assets/fonts/Inter-SemiBold.ttf"),
-    "Inter-Bold": require("../../assets/fonts/Inter-Bold.ttf"),
-    "Inter-Regular": require("../../assets/fonts/Inter-Regular.ttf"),
-  });
+const useCustomFonts = (): boolean => {
+  const [loaded, error] = useFonts(fontAssets)
+  if (error) console.error('useCustomFonts:', error)
+  return loaded
+}
 
-  if (error) {
-    console.error("useCustomFonts ERROR:", error);
-  }
-
-  return fontsLoaded;
-};
-
-export { useCustomFonts };
+export { useCustomFonts }
