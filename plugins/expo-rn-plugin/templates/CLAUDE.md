@@ -4,6 +4,7 @@
 
 - `any`, `as` casts, `eslint-disable` — fix at source
 - Raw hex/rgba in Tamagui props — use `$token` references only
+- Hardcoded numeric dimensions (padding, margin, fontSize, width, height, borderRadius, gap) — in Tamagui props use `$sm`/`$md`/`$lg` tokens (e.g. `fontSize="$2"`); in non-Tamagui style objects import `sizes`/`radius` from `@theme` and use `sizes.md`, `radius.lg` etc.
 - `StyleSheet.create()` — use Tamagui `styled()`
 - Inline `style={{…}}` props on non-Tamagui components — wrap with `styled()` from `@tamagui/core` and use token props on the wrapper
 - `FlatList` — use `FlashList` with `estimatedItemSize`
