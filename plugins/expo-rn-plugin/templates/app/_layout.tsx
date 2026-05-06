@@ -7,13 +7,13 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { TamaguiProvider } from "tamagui";
 import tamaguiConfig from "../tamagui.config";
-import { SplashView } from "@ksairi-org/react-native-splash-view";
+import { SplashOverlay } from "@atoms/SplashOverlay";
 import { useCustomFonts } from "@hooks";
 import { LinguiClientProvider } from "@i18n";
 import * as Sentry from "@sentry/react-native";
 import { setupSentry } from "@sentry";
-// Add your Rive splash animation to assets/splash.riv
-import splash from "../assets/splash.riv";
+// Add your Rive splash animation to assets/animations/splash.riv
+import splash from "../assets/animations/splash.riv";
 
 // Optional: add Stripe — run /expo-rn-plugin:stripe for setup instructions
 // import { StripeProvider } from "@stripe/stripe-react-native";
@@ -22,8 +22,6 @@ import splash from "../assets/splash.riv";
 const shouldEnableSentry = !__DEV__;
 
 setupSentry(shouldEnableSentry);
-
-const SPLASH_FADE_OUT_DURATION_MS = 1000;
 
 const styles = StyleSheet.create({
   gestureHandler: {
@@ -37,10 +35,6 @@ queryClient.setDefaultOptions({
   queries: {
     retry: 1,
   },
-});
-
-const getSplashViewStyle = (isOSThemeDark: boolean) => ({
-  backgroundColor: isOSThemeDark ? "#1a1a1a" : "#ffffff",
 });
 
 const ReactQueryDevToolsProvider = () => {
@@ -76,12 +70,7 @@ const RootLayout = () => {
           </TamaguiProvider>
         </GestureHandlerRootView>
       </QueryClientProvider>
-      <SplashView
-        style={getSplashViewStyle(isOSThemeDark)}
-        source={splash}
-        fadeOutDuration={SPLASH_FADE_OUT_DURATION_MS}
-        fadeOutDelay={2000}
-      />
+      <SplashOverlay source={splash} />
     </LinguiClientProvider>
   );
 };
