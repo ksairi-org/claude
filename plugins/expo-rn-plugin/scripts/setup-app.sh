@@ -527,6 +527,11 @@ GOOGLE_SERVICES_JSON_PATH={{ .GOOGLE_SERVICES_JSON_PATH }}
 # Optional: RevenueCat — single key for both iOS and Android (no platform split)
 # EXPO_PUBLIC_RC_API_KEY={{ .REVENUECAT_API_KEY }}
 
+# Optional: Social auth (Apple + Google sign-in via Supabase)
+# EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID={{ .GOOGLE_WEB_CLIENT_ID }}
+# EXPO_PUBLIC_ANDROID_APPLE_SIGN_IN_CLIENT_ID={{ .ANDROID_APPLE_SIGN_IN_CLIENT_ID }}
+# EXPO_PUBLIC_ANDROID_APPLE_CALLBACK={{ .ANDROID_APPLE_SIGN_IN_CALLBACK }}
+
 # Optional: Firebase notifications — uncomment and add secrets in Doppler
 # FIREBASE_SERVER_KEY={{ .FIREBASE_SERVER_KEY }}
 YAML
