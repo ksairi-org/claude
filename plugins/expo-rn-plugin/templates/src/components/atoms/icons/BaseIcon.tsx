@@ -4,6 +4,7 @@ import type { ColorTokens } from "tamagui";
 import { SvgXml } from "react-native-svg";
 
 import { svgImports } from "./svg-imports";
+import { sizes } from "@theme";
 import { getImageDimensions } from "@ksairi-org/react-native-functions";
 import { useFontScale } from "@ksairi-org/react-native-hooks";
 import { useColorTokenValue } from "@ksairi-org/react-native-ui-config";
@@ -45,7 +46,7 @@ const BaseIcon = ({
       width,
       height,
       autoScaleBasedOnScreenDimensions,
-      defaultSize: 30,
+      defaultSize: sizes.lg,
       fontScale,
       maxFontScaleToApply,
     });
