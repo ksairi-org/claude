@@ -4,7 +4,8 @@
 
 - `any`, `as` casts, `eslint-disable` — fix at source
 - Raw hex/rgba in Tamagui props — use `$token` references only
-- Hardcoded numeric dimensions (padding, margin, fontSize, width, height, borderRadius, gap) — in Tamagui props use `$sm`/`$md`/`$lg` tokens (e.g. `fontSize="$2"`); in non-Tamagui style objects import `sizes`/`radius` from `@theme` and use `sizes.md`, `radius.lg` etc.
+- Hardcoded numeric dimensions (padding, margin, fontSize, width, height, borderRadius, gap) — in Tamagui props use `$sm`/`$md`/`$lg` tokens; in non-Tamagui style objects import `sizes`/`radius` from `@theme`
+- Raw `Text` with manual `fontSize` — use semantic components from `@fonts` (Heading, Body, Label variants)
 - `StyleSheet.create()` — use Tamagui `styled()`
 - Inline `style={{…}}` props on non-Tamagui components — wrap with `styled()` from `@tamagui/core` and use token props on the wrapper
 - `FlatList` — use `FlashList` with `estimatedItemSize`
@@ -44,7 +45,7 @@ Run `/expo-rn-plugin:coding-standards` to load full standards. Quick pointers:
 - **Errors:** Sentry — `/expo-rn-plugin:sentry`
 - **API hooks:** orval-generated hooks in `src/api/generated/`
 - **Env vars:** Doppler — workspace = app name, project = `mobile` (web = `web`)
-- **Typography:** `@fonts` → `DisplayLg/Md`, `HeadingLg/Md/Sm`, `BodyLg/Md/Sm`, `BodyLgBold/MdBold/SmBold`, `LabelLg/Md/Sm` — never raw `Text` with `fontSize`
+- **Typography:** `@fonts` → semantic components (Heading, Body, Label variants) — never raw `Text` with `fontSize`
 - **Design:** Figma tokens in `src/theme/` — `/expo-rn-plugin:figma`
 - **Scaffold:** CRUD from DB table — `/expo-rn-plugin:scaffold`
 - **Push notifications:** FCM + expo-notifications
