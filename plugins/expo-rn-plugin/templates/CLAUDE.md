@@ -44,6 +44,7 @@ Run `/expo-rn-plugin:coding-standards` to load full standards. Quick pointers:
 - **Errors:** Sentry — `/expo-rn-plugin:sentry`
 - **API hooks:** orval-generated hooks in `src/api/generated/`
 - **Env vars:** Doppler — workspace = app name, project = `mobile` (web = `web`)
+- **Typography:** `@fonts` → `DisplayLg/Md`, `HeadingLg/Md/Sm`, `BodyLg/Md/Sm`, `BodyLgBold/MdBold/SmBold`, `LabelLg/Md/Sm` — never raw `Text` with `fontSize`
 - **Design:** Figma tokens in `src/theme/` — `/expo-rn-plugin:figma`
 - **Scaffold:** CRUD from DB table — `/expo-rn-plugin:scaffold`
 - **Push notifications:** FCM + expo-notifications
