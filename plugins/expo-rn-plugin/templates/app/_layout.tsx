@@ -8,6 +8,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { TamaguiProvider, styled } from "tamagui";
 import tamaguiConfig from "../tamagui.config";
 import { SplashView } from "@ksairi-org/react-native-splash-view";
+import { themes } from "@theme";
 import { useCustomFonts } from "@hooks";
 import { LinguiClientProvider } from "@i18n";
 import * as Sentry from "@sentry/react-native";
@@ -25,6 +26,10 @@ setupSentry(shouldEnableSentry);
 
 const StyledGestureHandlerRootView = styled(GestureHandlerRootView, {
   flex: 1,
+});
+
+const getSplashStyle = (isDark: boolean) => ({
+  backgroundColor: isDark ? themes.dark.splashBackground : themes.light.splashBackground,
 });
 
 const queryClient = new QueryClient();
@@ -68,7 +73,7 @@ const RootLayout = () => {
           </TamaguiProvider>
         </StyledGestureHandlerRootView>
       </QueryClientProvider>
-      <SplashView source={splash} style={{ backgroundColor: "#ffffff" }} />
+      <SplashView source={splash} style={getSplashStyle(isOSThemeDark)} />
     </LinguiClientProvider>
   );
 };
