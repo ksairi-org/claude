@@ -1,13 +1,13 @@
 import { Slot } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useReactQueryDevTools } from "@dev-plugins/react-query";
-import { StatusBar, StyleSheet, useColorScheme } from "react-native";
+import { StatusBar, useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { KeyboardProvider } from "react-native-keyboard-controller";
-import { TamaguiProvider } from "tamagui";
+import { TamaguiProvider, styled } from "tamagui";
 import tamaguiConfig from "../tamagui.config";
-import { SplashOverlay } from "@atoms/SplashOverlay";
+import { SplashView } from "@ksairi-org/react-native-splash-view";
 import { useCustomFonts } from "@hooks";
 import { LinguiClientProvider } from "@i18n";
 import * as Sentry from "@sentry/react-native";
@@ -23,10 +23,8 @@ const shouldEnableSentry = !__DEV__;
 
 setupSentry(shouldEnableSentry);
 
-const styles = StyleSheet.create({
-  gestureHandler: {
-    flex: 1,
-  },
+const StyledGestureHandlerRootView = styled(GestureHandlerRootView, {
+  flex: 1,
 });
 
 const queryClient = new QueryClient();
@@ -56,7 +54,7 @@ const RootLayout = () => {
     <LinguiClientProvider>
       <QueryClientProvider client={queryClient}>
         <ReactQueryDevToolsProvider />
-        <GestureHandlerRootView style={styles.gestureHandler}>
+        <StyledGestureHandlerRootView>
           <TamaguiProvider
             config={tamaguiConfig}
             defaultTheme={isOSThemeDark ? "dark" : "light"}
@@ -68,9 +66,9 @@ const RootLayout = () => {
               </KeyboardProvider>
             </BottomSheetModalProvider>
           </TamaguiProvider>
-        </GestureHandlerRootView>
+        </StyledGestureHandlerRootView>
       </QueryClientProvider>
-      <SplashOverlay source={splash} />
+      <SplashView source={splash} style={{ backgroundColor: "#ffffff" }} />
     </LinguiClientProvider>
   );
 };
